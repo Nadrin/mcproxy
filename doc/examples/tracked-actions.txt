@@ -1,0 +1,4 @@
+46 TNT
+259 Flint and steel
+326 Water bucket
+327 Lava bucket

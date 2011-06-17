@@ -1,0 +1,8 @@
+41 Gold block
+42 Iron block
+46 TNT
+57 Diamond block
+264 Diamond
+265 Iron Ingot
+266 Gold Ingot
+358 Map

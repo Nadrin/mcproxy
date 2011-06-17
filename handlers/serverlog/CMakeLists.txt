@@ -1,0 +1,6 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+INCLUDE_DIRECTORIES(${MCPROXY_SOURCE_DIR}/handlers/serverlog/include)
+INCLUDE_DIRECTORIES(/usr/include/glib-2.0)
+INCLUDE_DIRECTORIES(/usr/lib/glib-2.0/include)
+ADD_LIBRARY(serverlog SHARED src/init.c src/gamestate.c src/login.c src/track.c src/transaction.c src/inventory.c src/action.c src/chat.c src/settings.c)
+TARGET_LINK_LIBRARIES(serverlog proxyapi m pthread glib-2.0)

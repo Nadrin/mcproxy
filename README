@@ -1,0 +1,78 @@
+Minecraft Protocol Proxy (mcproxy)
+(c) Copyright 2011 Michał Siejak
+
+Version 0.2.0, Jun 17 2011
+
+1. About
+========
+
+mcproxy is a modular Minecraft protocol proxy daemon written in C.
+Its main use is to manipulate and/or analyze Minecraft protocol data
+in real-time on either server- or client-side being completely transparent
+to both parties.
+
+A functional proxy consists of two parts: the core (mcproxy binary) and at
+least one handler library. 
+
+The core takes care of networking, threading, protocol decoding
+and encoding, memory management etc.
+
+A handler library registers a set of callback functions to the core which
+get called whenever specific event occurs (for example new client connects 
+or specific type of protocol packet arrives).  It is here where required
+logic has to be implemented.
+
+The core publishes its API for use by handler libraries in the form of a
+static library (libproxyapi) which all handler libraries are required
+to link to.
+
+2. Currently implemented handler libraries
+==========================================
+
+  * libnoop
+    No-operation handler library. Passes through protocol data without
+    any intervention.
+
+  * libserverlog
+    ServerLog handler library. Logs certain player actions to a log file
+    and provides few useful features like MOTD or player accessible /list
+    command.
+
+3. Supported platforms
+======================
+
+mcproxy has been tested on GNU/Linux but should work in any POSIX 
+compliant environment with functional pthreads and BSD sockets
+implementation provided dependencies are met.
+
+4. Dependencies
+===============
+
+  * cmake (for building)
+  * pthreads
+  * iconv
+  * glib
+
+On Debian based systems you will need to have the following packages
+installed:
+
+  * build-essential
+  * cmake
+  * libglib2.0-dev
+
+5. Building
+===========
+
+Standard cmake building procedure applies:
+
+  $ cd $MCPROXY_SOURCE_TREE
+  $ mkdir build; cd build
+  $ cmake ..
+  $ make
+
+6. Contact the Author
+=====================
+
+Feel free to contact me at <my_name@my_surname.pl>.
+
+
