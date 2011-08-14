@@ -11,13 +11,19 @@
 #include <pthread.h>
 
 #include <mm.h>
-#include <stdio.h>
 
-static __thread mempool_t* default_pool = NULL;
-static pthread_mutex_t default_mutex    = PTHREAD_MUTEX_INITIALIZER;
+static pthread_key_t   default_pool_key;
+static pthread_once_t  default_pool_init = PTHREAD_ONCE_INIT;
+static pthread_mutex_t default_mutex     = PTHREAD_MUTEX_INITIALIZER;
+
+static void pool_global_init(void)
+{
+  pthread_key_create(&default_pool_key, NULL);
+}
 
 mempool_t* pool_create(mempool_t* pool, size_t bytes)
 {
+  pthread_once(&default_pool_init, pool_global_init);
   pool->base = mmap(NULL, bytes, PROT_READ | PROT_WRITE,
 		    MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE,
 		    -1, 0);
@@ -45,7 +51,7 @@ inline void* pool_malloc(mempool_t* pool, size_t bytes)
 {
   void* addr;
   if(!pool)
-    pool = default_pool;
+    pool = pthread_getspecific(default_pool_key);
 
   addr = (void*)pool->ptr;
   pool->index += bytes;
@@ -56,7 +62,7 @@ inline void* pool_malloc(mempool_t* pool, size_t bytes)
 inline void pool_free(mempool_t* pool)
 {
   if(!pool)
-    pool = default_pool;
+    pool = pthread_getspecific(default_pool_key);
   if(pool->index > 0)
     memset(pool->base, 0, pool->index);
 
@@ -66,7 +72,7 @@ inline void pool_free(mempool_t* pool)
 
 inline void pool_set_default(mempool_t* pool)
 {
-  default_pool = pool;
+  pthread_setspecific(default_pool_key, pool);
 }
 
 inline void thread_lock(void)
