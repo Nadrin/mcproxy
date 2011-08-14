@@ -12,6 +12,11 @@
 
 #include <mm.h>
 
+// OSX mmap() workaround
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
 static pthread_key_t   default_pool_key;
 static pthread_once_t  default_pool_init = PTHREAD_ONCE_INIT;
 static pthread_mutex_t default_mutex     = PTHREAD_MUTEX_INITIALIZER;
@@ -25,7 +30,7 @@ mempool_t* pool_create(mempool_t* pool, size_t bytes)
 {
   pthread_once(&default_pool_init, pool_global_init);
   pool->base = mmap(NULL, bytes, PROT_READ | PROT_WRITE,
-		    MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE,
+		    MAP_PRIVATE | MAP_ANONYMOUS,
 		    -1, 0);
   
   if(pool->base == MAP_FAILED) {
