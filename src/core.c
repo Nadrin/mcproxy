@@ -112,7 +112,7 @@ static void* core_thread(void* data)
   if(!client)
     goto _thread_done;
 
-  server = net_connect(thread_data->server_addr, thread_data->server_port);
+  server = net_connect(thread_data->server_addr, thread_data->server_port, NULL);
   if(!server)
     goto _thread_done;
 
@@ -176,14 +176,8 @@ static void* core_thread(void* data)
   }
   
  _thread_exit:
-  if(server) {
-    net_close(server->s);
-    free(server);
-  }
-  if(client) {
-    net_close(client->s);
-    free(client);
-  }
+  if(server) net_free(server);
+  if(client) net_free(client);
 
   pool_release(&pool);
   while(thread_data->flags & THREAD_FLAG_CREATE)
@@ -202,8 +196,8 @@ int core_throttle(uint64_t* last, unsigned long delay)
   return mcp_quit;
 }
 
-int core_main(const char* server_addr, int server_port, int listen_port, int debug,
-	      handler_api_t* handler_api)
+int core_main(const char* server_addr, const char* server_port, const char* listen_port,
+	      int debug, handler_api_t* handler_api)
 {
   unsigned long client_id = 0;
   msgdesc_t*    msgtable  = NULL;
@@ -222,7 +216,7 @@ int core_main(const char* server_addr, int server_port, int listen_port, int deb
   sigaddset(&blocked_signals, SIGHUP);
   pthread_sigmask(SIG_BLOCK, &blocked_signals, NULL);
 
-  listen_sockfd = net_listen(listen_port);
+  listen_sockfd = net_listen(listen_port, NULL);
   if(listen_sockfd <= 0) {
     log_print(NULL, "Cannot bind to port %d! Aborting.", listen_port);
     return EXIT_FAILURE;
@@ -230,7 +224,7 @@ int core_main(const char* server_addr, int server_port, int listen_port, int deb
 
   msgtable = proxy_init();
   memset(events, 0, EVENT_MAX*sizeof(event_t));
-  log_print(NULL, "Minecraft Proxy started, listening on port %d", listen_port);
+  log_print(NULL, "Minecraft Proxy started, listening on port %s", listen_port);
 
   if(handler_api->handler_startup(msgtable, events, debug) != PROXY_OK) {
     log_print(NULL, "Handler initialization failed! Aborting.");

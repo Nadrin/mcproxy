@@ -10,10 +10,10 @@
 
 #define MCPROXY_LOGFILE      "mcproxy.log"
 #define MCPROXY_PIDFILE      "mcproxy.pid"
+#define MCPROXY_DEFAULT_PORT "25565"
 
 #define MCPROXY_MAXQUEUE     10
 #define MCPROXY_THROTTLE     5000
-#define MCPROXY_DEFAULT_PORT 25565
 #define MCPROXY_META_MAX     64
 #define MCPROXY_SELECT_MAX   16
 

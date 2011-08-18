@@ -38,7 +38,7 @@ struct thread_data_s
 {
   int listen_sockfd;
   const char* server_addr;
-  unsigned short server_port;
+  const char* server_port;
   volatile unsigned long flags;
 
   cid_t client_id;
@@ -48,7 +48,7 @@ struct thread_data_s
 typedef struct thread_data_s thread_data_t;
 
 // Core entry point
-int core_main(const char* server_addr, int server_port, int listen_port, int debug,
-	      handler_api_t* handler_api);
+int core_main(const char* server_addr, const char* server_port, const char* listen_port,
+	      int debug, handler_api_t* handler_api);
 
 #endif

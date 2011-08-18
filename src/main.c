@@ -38,21 +38,22 @@ static void sig_daemonize(int sig)
 static void mcp_usage(const char* progname)
 {
   fprintf(stderr, "Minecraft Proxy, Copyright (c) 2011 Michał Siejak\n");
-  fprintf(stderr, "usage: %s [-d] [-p port] [-l logfile] [-r pidfile] <-L handlerlib> <server_addr>[:server_port]\n", progname);
+  fprintf(stderr, "usage: %s [-d] [-p port] [-l logfile] [-r pidfile] <-L handlerlib> <server_addr> [server_port]\n", progname);
   exit(EXIT_FAILURE);
 }
 
 void mcp_parse_arguments(int argc, char **argv,
-			 int* listen_port, int* server_port, char* server_addr,
+			 char* listen_port, char* server_port, char* server_addr,
 			 char* libfile, char* pidfile, char* logfile, int* debug)
 {
   int c;
   char  workdir[PATH_MAX];
   char* homedir = getenv("HOME");
 
-  *listen_port = MCPROXY_DEFAULT_PORT;
-  *server_port = MCPROXY_DEFAULT_PORT;
-  *debug       = LOG_NOFLAGS;
+  strcpy(listen_port, MCPROXY_DEFAULT_PORT);
+  strcpy(server_port, MCPROXY_DEFAULT_PORT);
+
+  *debug = LOG_NOFLAGS;
 
   getcwd(workdir, PATH_MAX);
   sprintf(pidfile, "%s/%s", homedir?homedir:"/tmp", MCPROXY_PIDFILE);
@@ -65,7 +66,7 @@ void mcp_parse_arguments(int argc, char **argv,
       *debug = LOG_DEBUG;
       break;
     case 'p':
-      *listen_port = atoi(optarg);
+      strcpy(listen_port, optarg);
       break;
     case 'l':
       if(optarg[0] == '/')
@@ -91,14 +92,11 @@ void mcp_parse_arguments(int argc, char **argv,
   }
   if(optind >= argc || libfile[0] == 0)
     mcp_usage(argv[0]);
-  if(sscanf(argv[optind], "%[a-zA-Z.]:%d", server_addr, server_port) < 1)
-    mcp_usage(argv[0]);
-  
-  if(*listen_port < 1 || *server_port < 1) {
-    fprintf(stderr, "%s: Invalid port number selected.\n", argv[0]);
-    exit(EXIT_FAILURE);
-  }
 
+  strcpy(server_addr, argv[optind]);
+  if(optind+1 < argc)
+    strcpy(server_port, argv[optind+1]);
+ 
   if(!homedir)
     fprintf(stderr, "%s: Warning, no HOME environment variable defined!\n", argv[0]);
 }
@@ -143,16 +141,16 @@ int main(int argc, char **argv)
   int    retcode;
 
   char server_addr[256];
+  char listen_port[100];
+  char server_port[100];
   char logfile[PATH_MAX];
   char pidfile[PATH_MAX];
   char libfile[PATH_MAX];
-
-  int  listen_port, server_port;
   int  debug_flag;
 
   handler_api_t handler_api;
 
-  mcp_parse_arguments(argc, argv, &listen_port, &server_port,
+  mcp_parse_arguments(argc, argv, listen_port, server_port,
 		      server_addr, libfile, pidfile, logfile, &debug_flag);
 
   if(util_file_stat(pidfile) != 0) {
