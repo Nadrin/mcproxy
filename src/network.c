@@ -18,6 +18,22 @@
 #include <config.h>
 #include <network.h>
 
+static inline void* net_get_inetaddr(struct sockaddr* addr)
+{
+  if(addr->sa_family == AF_INET6)
+    return &(((struct sockaddr_in6*)addr)->sin6_addr);
+  else
+    return &(((struct sockaddr_in*)addr)->sin_addr);
+}
+
+static inline uint16_t net_get_inetport(struct sockaddr* addr)
+{
+  if(addr->sa_family == AF_INET6)
+    return (uint16_t)((struct sockaddr_in6*)addr)->sin6_port;
+  else
+    return (uint16_t)((struct sockaddr_in*)addr)->sin_port;
+}
+
 nethost_t* net_hostinit(int s, const char* addr, unsigned short port)
 {
   nethost_t* result = malloc(sizeof(nethost_t));
@@ -66,22 +82,6 @@ int net_listen(const char* port, int* error)
 
   listen(s, MCPROXY_MAXQUEUE);
   return s;
-}
-
-static inline void* net_get_inetaddr(struct sockaddr* addr)
-{
-  if(addr->sa_family == AF_INET)
-    return &(((struct sockaddr_in*)addr)->sin_addr);
-  else
-    return &(((struct sockaddr_in6*)addr)->sin6_addr);
-}
-
-static inline uint16_t net_get_inetport(struct sockaddr* addr)
-{
-  if(addr->sa_family == AF_INET)
-    return (uint16_t)((struct sockaddr_in*)addr)->sin_port;
-  else
-    return (uint16_t)((struct sockaddr_in6*)addr)->sin6_port;
 }
 
 nethost_t* net_connect(const char* addr, const char* port, int* error)
