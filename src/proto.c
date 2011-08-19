@@ -10,12 +10,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <arpa/inet.h>
+#include <endian.h>
 
 #include <config.h>
 #include <proto.h>
 #include <util.h>
 #include <mm.h>
+
+// Floating point <-> integer conversion unions
+union _float32_conv
+{
+  float    fvalue;
+  uint32_t ivalue;
+};
+union _float64_conv
+{
+  double   fvalue;
+  uint64_t ivalue;
+};
 
 unsigned char proto_typeof(objlist_t* list, size_t index)
 {
@@ -36,56 +48,60 @@ inline void proto_putc(objlist_t* list, size_t index, char value)
 
 inline short proto_gets(objlist_t* list, size_t index)
 { 
-  return htons(*(short*)list->objects[index].data);
+  return be16toh(*(short*)list->objects[index].data);
 }
 
 inline void proto_puts(objlist_t* list, size_t index, short value)
 {
-  (*(short*)list->objects[index].data) = htons(value);
+  (*(short*)list->objects[index].data) = htobe16(value);
 }
 
 inline int32_t proto_geti(objlist_t* list, size_t index)
 {
-  return __builtin_bswap32(*(int32_t*)list->objects[index].data);
+  return be32toh(*(int32_t*)list->objects[index].data);
 }
 
 inline void proto_puti(objlist_t* list, size_t index, int32_t value)
 {
-  (*(int32_t*)list->objects[index].data) = __builtin_bswap32(value);
+  (*(int32_t*)list->objects[index].data) = htobe32(value);
 }
 
 inline int64_t proto_getl(objlist_t* list, size_t index)
 {
-  return __builtin_bswap64(*(int64_t*)list->objects[index].data);
+  return be64toh(*(int64_t*)list->objects[index].data);
 }
 
 inline void proto_putl(objlist_t* list, size_t index, int64_t value)
 {
-  (*(int64_t*)list->objects[index].data) = __builtin_bswap64(value);
+  (*(int64_t*)list->objects[index].data) = htobe64(value);
 }
 
 inline float proto_getf(objlist_t* list, size_t index)
 {
-  float value;
-  *((uint32_t*)&value) = __builtin_bswap32(*(uint32_t*)list->objects[index].data);
-  return value;
+  union _float32_conv conv;
+  conv.ivalue = be32toh(*(uint32_t*)list->objects[index].data);
+  return conv.fvalue;
 }
 
 inline void proto_putf(objlist_t* list, size_t index, float value)
 {
-  *((uint32_t*)list->objects[index].data) = __builtin_bswap32(*(uint32_t*)&value);
+  union _float32_conv conv;
+  conv.fvalue = value;
+  *((uint32_t*)list->objects[index].data) = htobe32(conv.ivalue);
 }
 
 inline double proto_getd(objlist_t* list, size_t index)
 {
-  double value;
-  *((uint64_t*)&value) = __builtin_bswap64(*(uint64_t*)list->objects[index].data);
-  return value;
+  union _float64_conv conv;
+  conv.ivalue = be64toh(*(uint64_t*)list->objects[index].data);
+  return conv.fvalue;
 }
 
 inline void proto_putd(objlist_t* list, size_t index, double value)
 {
-  *((uint64_t*)list->objects[index].data) = __builtin_bswap64(*(uint64_t*)&value);
+  union _float64_conv conv;
+  conv.fvalue = value;
+  *((uint64_t*)list->objects[index].data) = htobe64(conv.ivalue);
 }
 
 size_t proto_getstr(objlist_t* list, size_t index, char* buffer, size_t maxsize)
