@@ -15,21 +15,28 @@
 #include <gamestate.h>
 
 // Thread local storage
-static __thread player_t* tls_player      = NULL;
-static __thread GData* tls_transact_data  = NULL;
+static tls_value_t tls_player        = MCP_TLS_INITIALIZER;
+static tls_value_t tls_transact_data = MCP_TLS_INITIALIZER;
 
 inline void gs_set_player(player_t* player)
 {
-  tls_player = player;
+  thread_tls_initonce(&tls_player);
+  thread_tls_set(&tls_player, player);
+
   if(!player) {
-    g_datalist_clear(&tls_transact_data);
-    g_datalist_init(&tls_transact_data);
+    GData* transact_data;
+    thread_tls_initonce(&tls_transact_data);
+    transact_data = (GData*)thread_tls_get(&tls_transact_data);
+
+    g_datalist_clear(&transact_data);
+    g_datalist_init(&transact_data);
+    thread_tls_set(&tls_transact_data, transact_data);
   }
 }
 
 inline player_t* gs_get_player(void)
 {
-  return tls_player;
+  return thread_tls_get(&tls_player);
 }
 
 char* gs_get_dimstr(const int id)
@@ -40,20 +47,24 @@ char* gs_get_dimstr(const int id)
 
 void gs_push_transaction(transaction_t* transact)
 {
+  GData* transact_data     = thread_tls_get(&tls_transact_data);
   transaction_t* _transact = g_malloc(sizeof(transaction_t));
+
   memcpy(_transact, transact, sizeof(transaction_t));
-  g_datalist_id_set_data_full(&tls_transact_data, (GQuark)transact->id, _transact, g_free);
+  g_datalist_id_set_data_full(&transact_data, (GQuark)transact->id, _transact, g_free);
+  thread_tls_set(&tls_transact_data, transact_data);
 }
 
 int gs_pop_transaction(unsigned short id)
 {
-  transaction_t* transact = g_datalist_id_get_data(&tls_transact_data,
-						   (GQuark)id);
+  GData* transact_data    = (GData*)thread_tls_get(&tls_transact_data);
+  transaction_t* transact = g_datalist_id_get_data(&transact_data, (GQuark)id);
   if(!transact) return -1;
 
   if(transact->extra)
     free(transact->extra);
-  g_datalist_id_remove_data(&tls_transact_data, (GQuark)id);
+  g_datalist_id_remove_data(&transact_data, (GQuark)id);
+  thread_tls_set(&tls_transact_data, transact_data);
   return 0;
 }
 
@@ -61,15 +72,16 @@ int gs_call_transaction(cid_t client_id, unsigned short id,
 			nethost_t* client, nethost_t* server)
 {
   int retval;
-  transaction_t* transact = g_datalist_id_get_data(&tls_transact_data,
-						   (GQuark)id);
+  GData* transact_data    = (GData*)thread_tls_get(&tls_transact_data);
+  transaction_t* transact = g_datalist_id_get_data(&transact_data, (GQuark)id);
   if(!transact) return -1;
 
   retval = transact->function(client_id, client, server, transact->extra);
 
   if(transact->extra)
     free(transact->extra);
-  g_datalist_id_remove_data(&tls_transact_data, (GQuark)id);
+  g_datalist_id_remove_data(&transact_data, (GQuark)id);
+  thread_tls_set(&tls_transact_data, transact_data);
   return retval;
 }
 

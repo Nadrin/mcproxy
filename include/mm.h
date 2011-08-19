@@ -23,8 +23,4 @@ inline void* pool_malloc(mempool_t* pool, size_t bytes);
 inline void  pool_free(mempool_t* pool);
 inline void  pool_set_default(mempool_t* pool);
 
-inline void thread_lock(void);
-inline void thread_unlock(void);
-inline int  thread_trylock(void);
-
 #endif

@@ -17,6 +17,7 @@
 #include <proxy.h>
 #include <util.h>
 #include <mm.h>
+#include <thread.h>
 #include <log.h>
 
 #endif

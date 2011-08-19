@@ -19,7 +19,6 @@
 
 static pthread_key_t   default_pool_key;
 static pthread_once_t  default_pool_init = PTHREAD_ONCE_INIT;
-static pthread_mutex_t default_mutex     = PTHREAD_MUTEX_INITIALIZER;
 
 static void pool_global_init(void)
 {
@@ -80,17 +79,3 @@ inline void pool_set_default(mempool_t* pool)
   pthread_setspecific(default_pool_key, pool);
 }
 
-inline void thread_lock(void)
-{
-  pthread_mutex_lock(&default_mutex);
-}
-
-inline void thread_unlock(void)
-{
-  pthread_mutex_unlock(&default_mutex);
-}
-
-inline int thread_trylock(void)
-{
-  return pthread_mutex_trylock(&default_mutex);
-}
