@@ -8,9 +8,11 @@
 #ifndef __MCPROXY_CONFIG_H
 #define __MCPROXY_CONFIG_H
 
-#define MCPROXY_LOGFILE      "mcproxy.log"
-#define MCPROXY_PIDFILE      "mcproxy.pid"
-#define MCPROXY_DEFAULT_PORT "25565"
+#define MCPROXY_LOGFILE       "mcproxy.log"
+#define MCPROXY_PIDFILE       "mcproxy.pid"
+#define MCPROXY_DEFAULT_HOST  "localhost"
+#define MCPROXY_DEFAULT_PORT  "25565"
+#define MCPROXY_DEFAULT_LPORT "25566"
 
 #define MCPROXY_MAXQUEUE     10
 #define MCPROXY_THROTTLE     5000

@@ -21,10 +21,10 @@
 #define EVENT_DISCONNECTED 0x01
 #define EVENT_MAX          2
 
-#define PROXY_OK         0x00
-#define PROXY_NOSEND     0x01
-#define PROXY_DISCONNECT 0x02
-#define PROXY_ERROR      0x0A
+#define PROXY_OK           0x00
+#define PROXY_NOSEND       0x01
+#define PROXY_DISCONNECT   0x02
+#define PROXY_ERROR        0x0A
 
 typedef int (*event_func_t)(cid_t client_id, unsigned char type,
 			    nethost_t* client, nethost_t* server,

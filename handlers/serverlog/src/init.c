@@ -28,12 +28,15 @@ static inventory_handler_config_t config_inventory;
 static chat_handler_config_t config_chat;
 static gamestate_t gamestate;
 
-char* handler_info(void)
+handler_info_t* handler_info(void)
 {
-  return "ServerLog v1.1";
+  static handler_info_t info = {
+    "ServerLog", "Michał Siejak", 2, MODE_TYPE_PROXY
+  };
+  return &info;
 }
 
-int handler_startup(msgdesc_t* msglookup, event_t* events, unsigned long flags)
+int handler_startup(msgdesc_t* msglookup, event_t* events)
 {
   char item_list[PATH_MAX];
   char action_list[PATH_MAX];
@@ -44,7 +47,7 @@ int handler_startup(msgdesc_t* msglookup, event_t* events, unsigned long flags)
   // Login management handlers
   if(settings_read_config("serverlog.ini", &config_login, &gamestate,
 			  item_list, action_list) != 0)
-    return PROXY_ERROR;
+    return RESULT_ERROR;
 
   proxy_event_notify(events, EVENT_DISCONNECTED, login_event_disconnect, &config_login);
   proxy_register(msglookup, 0x01, login_handler_loginrequest, &config_login, NULL, NULL);
@@ -87,7 +90,7 @@ int handler_startup(msgdesc_t* msglookup, event_t* events, unsigned long flags)
   // Chat interception
   chat_init_config(&config_chat, &gamestate);
   proxy_register(msglookup, 0x03, chat_handler_main, &config_chat, NULL, NULL);
-  return PROXY_OK;
+  return RESULT_OK;
 }
 
 int handler_shutdown(void)
@@ -95,5 +98,5 @@ int handler_shutdown(void)
   action_free_config(&config_action);
   inventory_free_config(&config_inventory);
   g_list_free(gamestate.playerdb);
-  return PROXY_OK;
+  return RESULT_OK;
 }

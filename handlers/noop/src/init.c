@@ -9,17 +9,20 @@
 #include <stdlib.h>
 #include <mcproxy.h>
 
-char* handler_info(void)
+handler_info_t* handler_info(void)
 {
-  return "No-op v1.0";
+  static handler_info_t info = {
+    "No-op", "Michał Siejak", 1, MODE_TYPE_PROXY
+  };
+  return &info;
 }
 
-int handler_startup(msgdesc_t* msglookup, event_t* events, unsigned long flags)
+int handler_startup(msgdesc_t* msglookup, event_t* events)
 {
-  return PROXY_OK;
+  return RESULT_OK;
 }
 
 int handler_shutdown(void)
 {
-  return PROXY_OK;
+  return RESULT_OK;
 }

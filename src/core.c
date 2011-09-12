@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include <config.h>
+#include <system.h>
 #include <log.h>
 #include <network.h>
 #include <proto.h>
@@ -196,12 +197,12 @@ int core_throttle(uint64_t* last, unsigned long delay)
   return mcp_quit;
 }
 
-int core_main(const char* server_addr, const char* server_port, const char* listen_port,
-	      int debug, handler_api_t* handler_api)
+int core_main(sys_config_t* system_config, handler_api_t* handler_api)
 {
-  unsigned long client_id = 0;
-  msgdesc_t*    msgtable  = NULL;
-  event_t       events[EVENT_MAX];
+  unsigned long   client_id    = 0;
+  msgdesc_t*      msgtable     = NULL;
+  handler_info_t* handler_info = NULL;
+  event_t         events[EVENT_MAX];
 
   int      listen_sockfd;
   sigset_t blocked_signals;
@@ -216,24 +217,32 @@ int core_main(const char* server_addr, const char* server_port, const char* list
   sigaddset(&blocked_signals, SIGHUP);
   pthread_sigmask(SIG_BLOCK, &blocked_signals, NULL);
 
-  listen_sockfd = net_listen(listen_port, NULL);
+  handler_info = handler_api->handler_info();
+  if(sys_set_mode(handler_info->type) != RESULT_OK) {
+    log_print(NULL, "Failed to initialize requested mode of operation: 0x%02x", handler_info->type);
+    return EXIT_FAILURE;
+  }
+
+  listen_sockfd = net_listen(system_config->listen_port, NULL);
   if(listen_sockfd <= 0) {
-    log_print(NULL, "Cannot bind to port %d! Aborting.", listen_port);
+    log_print(NULL, "Cannot bind to port %d! Aborting.", system_config->listen_port);
     return EXIT_FAILURE;
   }
 
   msgtable = proxy_init();
   memset(events, 0, EVENT_MAX*sizeof(event_t));
-  log_print(NULL, "Minecraft Proxy started, listening on port %s", listen_port);
+  log_print(NULL, "Minecraft Proxy started, listening on port %s", system_config->listen_port);  
+  log_print(NULL, "Requested mode of operation: 0x%02x", handler_info->type);
 
-  if(handler_api->handler_startup(msgtable, events, debug) != PROXY_OK) {
+  if(handler_api->handler_startup(msgtable, events) != RESULT_OK) {
     log_print(NULL, "Handler initialization failed! Aborting.");
     net_close(listen_sockfd);
     proxy_free(msgtable);
     return EXIT_FAILURE;
   }
   
-  log_print(NULL, "Handler library initialized: %s", handler_api->handler_info());
+  log_print(NULL, "Handler library initialized: %s, version: %d",
+	    handler_info->name, handler_info->version);
   while(mcp_quit == 0) {
     pthread_t thread_id;
     thread_data_t* thread_data = NULL;
@@ -249,11 +258,11 @@ int core_main(const char* server_addr, const char* server_port, const char* list
     thread_data->lookup        = msgtable;
     thread_data->events        = events;
 
-    thread_data->server_addr = server_addr;
-    thread_data->server_port = server_port;
+    thread_data->server_addr = system_config->server_addr;
+    thread_data->server_port = system_config->server_port;
     thread_data->flags       = THREAD_FLAG_CREATE;
 
-    if(debug & LOG_DEBUG)
+    if(system_config->debug_flag & LOG_DEBUG)
       thread_data->flags |= THREAD_FLAG_DEBUG;
 
     memset(&thread_id, 0, sizeof(pthread_t));

@@ -21,19 +21,6 @@
 #define CORE_EHANDLER       0x03
 #define CORE_EDONE          0x0A
 
-// Handler Library API
-typedef char* (*handler_info_func_t)(void);
-typedef int   (*handler_startup_func_t)(msgdesc_t* msglookup, event_t* events, unsigned long flags);
-typedef int   (*handler_shutdown_func_t)(void);
-
-struct handler_api_s
-{
-  handler_info_func_t     handler_info;
-  handler_startup_func_t  handler_startup;
-  handler_shutdown_func_t handler_shutdown;
-};
-typedef struct handler_api_s handler_api_t;
-
 struct thread_data_s
 {
   int listen_sockfd;
@@ -48,7 +35,6 @@ struct thread_data_s
 typedef struct thread_data_s thread_data_t;
 
 // Core entry point
-int core_main(const char* server_addr, const char* server_port, const char* listen_port,
-	      int debug, handler_api_t* handler_api);
+int core_main(sys_config_t* system_config, handler_api_t* handler_api);
 
 #endif

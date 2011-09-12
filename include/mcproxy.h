@@ -15,6 +15,7 @@
 
 #include <proto.h>
 #include <proxy.h>
+#include <system.h>
 #include <util.h>
 #include <mm.h>
 #include <thread.h>

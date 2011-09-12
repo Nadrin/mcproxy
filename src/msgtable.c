@@ -13,20 +13,20 @@
 #include <proto.h>
 #include <proxy.h>
 
-#define PROTOCOL_VERSION 13
+#define PROTOCOL_VERSION 15
 #define _defmsg(id, format) { id, format, NULL, NULL, NULL, NULL }
 
 msgdesc_t msgtable[] = {
-  _defmsg(0x00, NULL), // Keep Alive
-  _defmsg(0x01, "itlc"), // Login Request
+  _defmsg(0x00, "i"), // Keep Alive
+  _defmsg(0x01, "itliccc"), // Login Request
   _defmsg(0x02, "t"), // Handshake
   _defmsg(0x03, "t"), // Chat message
   _defmsg(0x04, "l"), // Time update
   _defmsg(0x05, "isss"), // Entity equipment
   _defmsg(0x06, "iii"), // Spawn position
   _defmsg(0x07, "iic"), // Use entity
-  _defmsg(0x08, "s"), // Update health
-  _defmsg(0x09, "c"), // Respawn
+  _defmsg(0x08, "ssf"), // Update health
+  _defmsg(0x09, "ccsl"), // Respawn
   _defmsg(0x0A, "c"), // Player
   _defmsg(0x0B, "ddddc"), // Player position
   _defmsg(0x0C, "ffc"), // Player look
@@ -54,6 +54,9 @@ msgdesc_t msgtable[] = {
   _defmsg(0x26, "ic"), // Entity status
   _defmsg(0x27, "ii"), // Attach entity
   _defmsg(0x28, "im"), // Entity metadata
+  _defmsg(0x29, "iccs"), // Entity effect
+  _defmsg(0x2A, "ic"), // Remove entity effect
+  _defmsg(0x2B, "ccs"), // Experience
   _defmsg(0x32, "iic"), // Pre-chunk
   _defmsg(0x33, "isiccci"), // Map-chunk (datahelper)
   _defmsg(0x34, "iis"), // Multiblock change (datahelper)
@@ -61,7 +64,7 @@ msgdesc_t msgtable[] = {
   _defmsg(0x36, "isicc"), // Play note block
   _defmsg(0x3C, "dddfi"), // Explosion (datahelper)
   _defmsg(0x3D, "iicii"), // Door change (new in 1.6)
-  _defmsg(0x46, "c"), // Invalid bed
+  _defmsg(0x46, "cc"), // New/Invalid state
   _defmsg(0x47, "iciii"), // Weather
   _defmsg(0x64, "ccuc"), // Open window
   _defmsg(0x65, "c"), // Close window
@@ -70,8 +73,11 @@ msgdesc_t msgtable[] = {
   _defmsg(0x68, "cs"), // Window items (datahelper)
   _defmsg(0x69, "css"), // Update progress bar
   _defmsg(0x6A, "csc"), // Transaction
+  _defmsg(0x6B, "ssss"), // Creative inventory action
   _defmsg(0x82, "isitttt"), // Update sign
   _defmsg(0x83, "ssc"), // Map data (new in 1.6) (datahelper)
   _defmsg(0xC8, "ic"), // Increment statistic
+  _defmsg(0xC9, "tcs"), // User list item
+  _defmsg(0xFE, NULL), // Server list ping
   _defmsg(0xFF, "t"), // Kick
 };

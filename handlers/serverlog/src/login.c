@@ -85,7 +85,7 @@ int login_handler_loginrequest(cid_t client_id, char direction, unsigned char ms
 
       gs_set_player((player_t*)found->data);
       gs_get_player()->entity_id = proto_geti(data, 0);
-      gs_get_player()->dim       = abs(proto_getc(data, 3));
+      gs_get_player()->dim       = abs(proto_getc(data, 4));
     }
     thread_unlock();
 
@@ -151,7 +151,7 @@ int login_handler_kick(cid_t client_id, char direction, unsigned char msg_id,
 				      &client_id, gs_find_bycid);
     if(!found) {
       thread_unlock();
-      return PROXY_ERROR;
+      return PROXY_OK; // Assume list ping
     }
     config->gs->playerdb = g_list_remove(config->gs->playerdb, found->data);
   }
