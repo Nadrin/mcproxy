@@ -6,16 +6,21 @@
  */
 
 #include <stdlib.h>
+#include <signal.h>
 #include <dlfcn.h>
+#include <memory.h>
+#include <unistd.h>
 
 #include <config.h>
 #include <system.h>
 
-static unsigned int _sys_mode = MODE_TYPE_UNSPEC;
-static char**       _sys_argv = NULL;
-static int          _sys_argc = 0;
+static unsigned int  _sys_mode = MODE_TYPE_UNSPEC;
+static char**        _sys_argv = NULL;
+static int           _sys_argc = 0;
 
-int sys_init(void* library, handler_api_t* handler_api)
+extern volatile sig_atomic_t mcp_quit;
+
+int sys_initapi(void* library, handler_api_t* handler_api)
 {
   handler_api->handler_info     = dlsym(library, "handler_info");
   handler_api->handler_startup  = dlsym(library, "handler_startup");
@@ -63,4 +68,11 @@ int sys_argc(void)
 char** sys_argv(void)
 {
   return _sys_argv;
+}
+
+int sys_status(void)
+{
+  if(mcp_quit != 0)
+    return SYSTEM_SHUTDOWN;
+  return SYSTEM_OK;
 }

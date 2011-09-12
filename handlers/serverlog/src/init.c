@@ -44,6 +44,9 @@ int handler_startup(msgdesc_t* msglookup, event_t* events)
   // Global gamestate
   memset(&gamestate, 0, sizeof(gamestate_t));
 
+  // Configure global state
+  sys_get_config()->connect_delay = MCPROXY_DEFAULT_DELAY;
+
   // Login management handlers
   if(settings_read_config("serverlog.ini", &config_login, &gamestate,
 			  item_list, action_list) != 0)

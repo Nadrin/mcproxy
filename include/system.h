@@ -11,6 +11,7 @@
 #include <proxy.h>
 
 #define SYSTEM_OK        0x00
+#define SYSTEM_SHUTDOWN  0xFE
 #define SYSTEM_ERROR     0xFF
 
 #define MODE_TYPE_UNSPEC 0x00
@@ -51,13 +52,14 @@ struct sys_config_s
   char pidfile[PATH_MAX];
   char libfile[PATH_MAX];
   int  debug_flag;
+  unsigned long connect_delay;
 };
 typedef struct sys_config_s sys_config_t;
 
 // System API
-int           sys_init(void* library, handler_api_t* handler_api);
+int           sys_initapi(void* library, handler_api_t* handler_api);
+int           sys_status(void);
 sys_config_t* sys_get_config(void);
-
 unsigned int  sys_get_mode(void);
 int           sys_set_mode(unsigned int mode);
 void          sys_set_args(int argc, char** argv);

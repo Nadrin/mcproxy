@@ -73,8 +73,11 @@ int  proxy_sendmsg(unsigned char msg_id, nethost_t* host,
 int
 proxy_handler_unknown(unsigned long client_id, char direction, unsigned char msg_id,
 		      nethost_t* hfrom, nethost_t* hto, objlist_t* data, void* extra);
-int 
+int
 proxy_handler_debug(unsigned long client_id, char direction, unsigned char msg_id,
 		    nethost_t* hfrom, nethost_t* hto, objlist_t* data, void* extra);
+int
+proxy_handler_throttle(cid_t client_id, char direction, unsigned char msg_id,
+		       nethost_t* hfrom, nethost_t* hto, objlist_t* data, void *extra);
 
 #endif

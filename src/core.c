@@ -23,9 +23,6 @@
 #include <util.h>
 #include <mm.h>
 
-// Global quit flag
-extern volatile sig_atomic_t mcp_quit;
-
 int core_dispatch(thread_data_t* data, char direction,
 		  nethost_t* host_from, nethost_t* host_to)
 {
@@ -137,7 +134,7 @@ static void* core_thread(void* data)
 	    thread_data->client_id, client->addr, client->port);
 
   net_error = errno = 0;
-  while(mcp_quit == 0) {
+  while(sys_status() == SYSTEM_OK) {
     unsigned long sockready = net_select_rd(2, client->s, server->s);
     if(sockready == 0) {
       net_error = CORE_ENETWORK;
@@ -189,12 +186,14 @@ static void* core_thread(void* data)
 
 int core_throttle(uint64_t* last, unsigned long delay)
 {
+  int status;
   while(util_time() - *last < delay) {
-    if(mcp_quit != 0) return mcp_quit;
+    if((status = sys_status()) != SYSTEM_OK)
+      return status;
     usleep(10000);
   }
   *last = util_time();
-  return mcp_quit;
+  return sys_status();
 }
 
 int core_main(sys_config_t* system_config, handler_api_t* handler_api)
@@ -240,16 +239,16 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
     proxy_free(msgtable);
     return EXIT_FAILURE;
   }
-  
+
   log_print(NULL, "Handler library initialized: %s, version: %d",
 	    handler_info->name, handler_info->version);
-  while(mcp_quit == 0) {
+  while(sys_status() == SYSTEM_OK) {
     pthread_t thread_id;
     thread_data_t* thread_data = NULL;
 
     if(!(net_select_rd(1, listen_sockfd) & 0x01))
       continue;
-    if(core_throttle(&last_connection, MCPROXY_THROTTLE) != 0)
+    if(core_throttle(&last_connection, system_config->connect_delay) != SYSTEM_OK)
       break;
     
     thread_data = malloc(sizeof(thread_data_t));

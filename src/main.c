@@ -154,7 +154,8 @@ int main(int argc, char **argv)
   system_config = sys_get_config();
   mcp_parse_arguments(argc, argv, system_config);
   
-  if(util_file_stat(system_config->pidfile) != 0) {
+  if(system_config->debug_flag == LOG_NOFLAGS && 
+     util_file_stat(system_config->pidfile) != 0) {
     fprintf(stderr, "%s: PID file %s exists! Not starting.\n", argv[0], system_config->pidfile);
     exit(EXIT_FAILURE);
   }
@@ -165,7 +166,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  if(sys_init(libhandle, &handler_api) != 0) {
+  if(sys_initapi(libhandle, &handler_api) != 0) {
     fprintf(stderr, "%s: Specified handler library is invalid", argv[0]);
     dlclose(libhandle);
     exit(EXIT_FAILURE);
@@ -184,12 +185,16 @@ int main(int argc, char **argv)
 
   signal(SIGTERM, sig_quit);
   signal(SIGINT, sig_quit);
-  util_file_writepid(system_config->pidfile);
+
+  if(system_config->debug_flag == LOG_NOFLAGS)
+    util_file_writepid(system_config->pidfile);
 
   retcode = core_main(system_config, &handler_api);
   
   log_close(loghandle);
   dlclose(libhandle);
-  unlink(system_config->pidfile);
+  if(system_config->debug_flag == LOG_NOFLAGS)
+    unlink(system_config->pidfile);
+
   exit(retcode);
 }

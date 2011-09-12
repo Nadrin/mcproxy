@@ -5,20 +5,22 @@
  * See COPYING file for details.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 
 #include <config.h>
 #include <log.h>
 #include <proxy.h>
+#include <system.h>
 #include <mm.h>
+#include <util.h>
 
 extern msgdesc_t msgtable[];
 
 static int
-helper_generic_item(unsigned long client_id, char mode, unsigned char msg_id,
+helper_generic_item(cid_t client_id, char mode, unsigned char msg_id,
 		    nethost_t* host, objlist_t* data, void* extra)
 {
   int base_index = 4 + (msg_id == 0x66);
@@ -38,7 +40,7 @@ helper_generic_item(unsigned long client_id, char mode, unsigned char msg_id,
 }
 
 static int
-helper_add_object(unsigned long client_id, char mode, unsigned char msg_id,
+helper_add_object(cid_t client_id, char mode, unsigned char msg_id,
 		  nethost_t* host, objlist_t* data, void* extra)
 {
   if(proto_geti(data, 5) == 0)
@@ -58,7 +60,7 @@ helper_add_object(unsigned long client_id, char mode, unsigned char msg_id,
 }
 
 static int
-helper_set_slot(unsigned long client_id, char mode, unsigned char msg_id,
+helper_set_slot(cid_t client_id, char mode, unsigned char msg_id,
 		nethost_t* host, objlist_t* data, void* extra)
 {
   if(proto_gets(data, 2) < 0)
@@ -76,7 +78,7 @@ helper_set_slot(unsigned long client_id, char mode, unsigned char msg_id,
 }
 
 static int
-helper_map_chunk(unsigned long client_id, char mode, unsigned char msg_id,
+helper_map_chunk(cid_t client_id, char mode, unsigned char msg_id,
 		 nethost_t* host, objlist_t* data, void* extra)
 {
   size_t datasize = proto_geti(data, 6);
@@ -84,7 +86,7 @@ helper_map_chunk(unsigned long client_id, char mode, unsigned char msg_id,
 }
 
 static int
-helper_multiblock_change(unsigned long client_id, char mode, unsigned char msg_id,
+helper_multiblock_change(cid_t client_id, char mode, unsigned char msg_id,
 			 nethost_t* host, objlist_t* data, void* extra)
 {
   short count = proto_gets(data, 2);
@@ -93,7 +95,7 @@ helper_multiblock_change(unsigned long client_id, char mode, unsigned char msg_i
 }
 
 static int
-helper_explosion(unsigned long client_id, char mode, unsigned char msg_id,
+helper_explosion(cid_t client_id, char mode, unsigned char msg_id,
 		 nethost_t* host, objlist_t* data, void* extra)
 {
   size_t datasize = proto_geti(data, 4) * 3;
@@ -102,7 +104,7 @@ helper_explosion(unsigned long client_id, char mode, unsigned char msg_id,
 }
 
 static int
-helper_window_items(unsigned long client_id, char mode, unsigned char msg_id,
+helper_window_items(cid_t client_id, char mode, unsigned char msg_id,
 		    nethost_t* host, objlist_t* data, void* extra)
 {
   short i;
@@ -138,7 +140,7 @@ helper_window_items(unsigned long client_id, char mode, unsigned char msg_id,
 }
 
 static int
-helper_map_data(unsigned long client_id, char mode, unsigned char msg_id,
+helper_map_data(cid_t client_id, char mode, unsigned char msg_id,
 		nethost_t* host, objlist_t* data, void* extra)
 {
   size_t datasize = (unsigned char)proto_getc(data, 2);
@@ -147,7 +149,7 @@ helper_map_data(unsigned long client_id, char mode, unsigned char msg_id,
 }
 
 int
-proxy_handler_unknown(unsigned long client_id, char direction, unsigned char msg_id,
+proxy_handler_unknown(cid_t client_id, char direction, unsigned char msg_id,
 		      nethost_t* hfrom, nethost_t* hto, objlist_t* data, void* extra)
 {
   log_print(NULL, "(%04d) Unsupported packet type: 0x%02x", client_id, msg_id);
@@ -155,11 +157,30 @@ proxy_handler_unknown(unsigned long client_id, char direction, unsigned char msg
 }
 
 int 
-proxy_handler_debug(unsigned long client_id, char direction, unsigned char msg_id,
+proxy_handler_debug(cid_t client_id, char direction, unsigned char msg_id,
 		    nethost_t* hfrom, nethost_t* hto, objlist_t* data, void* extra)
 {
   log_print(NULL, "(%04d) Intercepted packet: 0x%02x (%s)", client_id, msg_id,
 	    direction==MSG_TOSERVER?"to server":"to client");
+  return PROXY_OK;
+}
+
+int
+proxy_handler_throttle(cid_t client_id, char direction, unsigned char msg_id,
+		       nethost_t* hfrom, nethost_t* hto, objlist_t* data, void *extra)
+{
+  static uint64_t last_connection = 0;
+  unsigned long delay = *(unsigned long*)extra;
+
+  if(direction != MSG_TOSERVER)
+    return PROXY_OK;
+
+  while(util_time() - last_connection < delay) {
+    if(sys_status() == SYSTEM_SHUTDOWN)
+      return PROXY_OK;
+    usleep(10000);
+  }
+  last_connection = util_time();
   return PROXY_OK;
 }
 
