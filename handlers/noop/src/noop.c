@@ -1,6 +1,6 @@
 /* Minecraft Protocol Proxy (mcproxy)
  * Copyright (c) 2011 Michał Siejak
- * No-op handler library.
+ * No-op proxy handler library.
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.

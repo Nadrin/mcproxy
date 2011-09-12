@@ -1,0 +1,3 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+ADD_LIBRARY(namechange SHARED src/namechange.c)
+TARGET_LINK_LIBRARIES(namechange proxyapi)

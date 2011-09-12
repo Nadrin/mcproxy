@@ -13,4 +13,5 @@ ENDIF(DEFINED APPLE)
 TARGET_LINK_LIBRARIES(mcproxy proxyapi dl m pthread ${OSX_LIBRARIES})
 
 ADD_SUBDIRECTORY(handlers/noop)
+ADD_SUBDIRECTORY(handlers/namechange)
 ADD_SUBDIRECTORY(handlers/serverlog)

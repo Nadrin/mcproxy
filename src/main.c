@@ -45,7 +45,7 @@ static void mcp_usage(const char* progname)
 
 void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
 {
-  int c, handler_args = 0;
+  int c, i;
   char  workdir[PATH_MAX];
   char* homedir = getenv("HOME");
 
@@ -60,7 +60,7 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
   sprintf(config->logfile, "%s/%s", homedir?homedir:"/tmp", MCPROXY_LOGFILE);
   config->libfile[0] = 0;
 
-  while((c = getopt(argc, argv, "dp:l:r:L:-")) != -1 && handler_args == 0) {
+  while((c = getopt(argc, argv, "+dp:l:r:L:")) != -1) {
     switch(c) {
     case 'd':
       config->debug_flag = LOG_DEBUG;
@@ -86,26 +86,24 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
       else
 	sprintf(config->libfile, "%s/%s", workdir, optarg);
       break;
-    case '-':
-      handler_args = 1;
-      break;
     default:
       mcp_usage(argv[0]);
     }
   }
   if(!*(config->libfile))
     mcp_usage(argv[0]);
+  if(optind > 0 && strcmp(argv[optind-1], "--") == 0)
+    optind--;
 
-  if(handler_args == 0) {
-    if(optind < argc)
-      strcpy(config->server_addr, argv[optind++]);
-    if(optind < argc)
-      strcpy(config->server_port, argv[optind++]);
-    if(optind < argc && strcmp(argv[optind++], "--") != 0)
-      mcp_usage(argv[0]);
+  i=0;
+  while(optind < argc && strcmp(argv[optind], "--") != 0) {
+    if(i==0) strcpy(config->server_addr, argv[optind]);
+    if(i==1) strcpy(config->server_port, argv[optind]);
+    if(i==2) mcp_usage(argv[0]);
+    i++; optind++;
   }
 
-  if(optind < argc)
+  if(++optind < argc)
     sys_set_args(argc - optind, &argv[optind]);
   if(!homedir)
     fprintf(stderr, "%s: Warning, no HOME environment variable defined!\n", argv[0]);
