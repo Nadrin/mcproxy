@@ -45,7 +45,7 @@ static void mcp_usage(const char* progname)
 
 void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
 {
-  int c;
+  int c, handler_args = 0;
   char  workdir[PATH_MAX];
   char* homedir = getenv("HOME");
 
@@ -60,7 +60,7 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
   sprintf(config->logfile, "%s/%s", homedir?homedir:"/tmp", MCPROXY_LOGFILE);
   config->libfile[0] = 0;
 
-  while((c = getopt(argc, argv, "dp:l:r:L:")) != -1) {
+  while((c = getopt(argc, argv, "dp:l:r:L:-")) != -1 && handler_args == 0) {
     switch(c) {
     case 'd':
       config->debug_flag = LOG_DEBUG;
@@ -86,6 +86,9 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
       else
 	sprintf(config->libfile, "%s/%s", workdir, optarg);
       break;
+    case '-':
+      handler_args = 1;
+      break;
     default:
       mcp_usage(argv[0]);
     }
@@ -93,11 +96,17 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
   if(!*(config->libfile))
     mcp_usage(argv[0]);
 
+  if(handler_args == 0) {
+    if(optind < argc)
+      strcpy(config->server_addr, argv[optind++]);
+    if(optind < argc)
+      strcpy(config->server_port, argv[optind++]);
+    if(optind < argc && strcmp(argv[optind++], "--") != 0)
+      mcp_usage(argv[0]);
+  }
+
   if(optind < argc)
-    strcpy(config->server_addr, argv[optind]);
-  if(optind+1 < argc)
-    strcpy(config->server_port, argv[optind+1]);
- 
+    sys_set_args(argc - optind, &argv[optind]);
   if(!homedir)
     fprintf(stderr, "%s: Warning, no HOME environment variable defined!\n", argv[0]);
 }
@@ -158,7 +167,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  if(sys_api_init(libhandle, &handler_api) != 0) {
+  if(sys_init(libhandle, &handler_api) != 0) {
     fprintf(stderr, "%s: Specified handler library is invalid", argv[0]);
     dlclose(libhandle);
     exit(EXIT_FAILURE);

@@ -5,14 +5,17 @@
  * See COPYING file for details.
  */
 
+#include <stdlib.h>
 #include <dlfcn.h>
 
 #include <config.h>
 #include <system.h>
 
 static unsigned int _sys_mode = MODE_TYPE_UNSPEC;
+static char**       _sys_argv = NULL;
+static int          _sys_argc = 0;
 
-int sys_api_init(void* library, handler_api_t* handler_api)
+int sys_init(void* library, handler_api_t* handler_api)
 {
   handler_api->handler_info     = dlsym(library, "handler_info");
   handler_api->handler_startup  = dlsym(library, "handler_startup");
@@ -21,8 +24,8 @@ int sys_api_init(void* library, handler_api_t* handler_api)
   if(!handler_api->handler_info ||
      !handler_api->handler_startup ||
      !handler_api->handler_shutdown)
-    return 1;
-  return 0;
+    return SYSTEM_ERROR;
+  return SYSTEM_OK;
 }
 
 sys_config_t* sys_get_config(void)
@@ -38,8 +41,26 @@ unsigned int sys_get_mode(void)
 
 int sys_set_mode(unsigned int mode)
 {
-  if(mode >= MODE_TYPE_MAX)
-    return 1;
+  if(_sys_mode != MODE_TYPE_UNSPEC)
+    return SYSTEM_ERROR;
+  if(mode == MODE_TYPE_UNSPEC || mode >= MODE_TYPE_MAX)
+    return SYSTEM_ERROR;
   _sys_mode = mode;
-  return 0;
+  return SYSTEM_OK;
+}
+
+void sys_set_args(int argc, char** argv)
+{
+  _sys_argc = argc;
+  _sys_argv = argv;
+}
+
+int sys_argc(void)
+{
+  return _sys_argc;
+}
+
+char** sys_argv(void)
+{
+  return _sys_argv;
 }

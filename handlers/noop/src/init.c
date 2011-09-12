@@ -19,10 +19,10 @@ handler_info_t* handler_info(void)
 
 int handler_startup(msgdesc_t* msglookup, event_t* events)
 {
-  return RESULT_OK;
+  return SYSTEM_OK;
 }
 
 int handler_shutdown(void)
 {
-  return RESULT_OK;
+  return SYSTEM_OK;
 }

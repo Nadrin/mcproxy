@@ -47,7 +47,7 @@ int handler_startup(msgdesc_t* msglookup, event_t* events)
   // Login management handlers
   if(settings_read_config("serverlog.ini", &config_login, &gamestate,
 			  item_list, action_list) != 0)
-    return RESULT_ERROR;
+    return SYSTEM_ERROR;
 
   proxy_event_notify(events, EVENT_DISCONNECTED, login_event_disconnect, &config_login);
   proxy_register(msglookup, 0x01, login_handler_loginrequest, &config_login, NULL, NULL);
@@ -90,7 +90,7 @@ int handler_startup(msgdesc_t* msglookup, event_t* events)
   // Chat interception
   chat_init_config(&config_chat, &gamestate);
   proxy_register(msglookup, 0x03, chat_handler_main, &config_chat, NULL, NULL);
-  return RESULT_OK;
+  return SYSTEM_OK;
 }
 
 int handler_shutdown(void)
@@ -98,5 +98,5 @@ int handler_shutdown(void)
   action_free_config(&config_action);
   inventory_free_config(&config_inventory);
   g_list_free(gamestate.playerdb);
-  return RESULT_OK;
+  return SYSTEM_OK;
 }

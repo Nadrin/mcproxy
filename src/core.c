@@ -218,7 +218,7 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
   pthread_sigmask(SIG_BLOCK, &blocked_signals, NULL);
 
   handler_info = handler_api->handler_info();
-  if(sys_set_mode(handler_info->type) != RESULT_OK) {
+  if(sys_set_mode(handler_info->type) != SYSTEM_OK) {
     log_print(NULL, "Failed to initialize requested mode of operation: 0x%02x", handler_info->type);
     return EXIT_FAILURE;
   }
@@ -234,7 +234,7 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
   log_print(NULL, "Minecraft Proxy started, listening on port %s", system_config->listen_port);  
   log_print(NULL, "Requested mode of operation: 0x%02x", handler_info->type);
 
-  if(handler_api->handler_startup(msgtable, events) != RESULT_OK) {
+  if(handler_api->handler_startup(msgtable, events) != SYSTEM_OK) {
     log_print(NULL, "Handler initialization failed! Aborting.");
     net_close(listen_sockfd);
     proxy_free(msgtable);

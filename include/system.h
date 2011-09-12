@@ -10,8 +10,8 @@
 
 #include <proxy.h>
 
-#define RESULT_OK        0x00
-#define RESULT_ERROR     0xFF
+#define SYSTEM_OK        0x00
+#define SYSTEM_ERROR     0xFF
 
 #define MODE_TYPE_UNSPEC 0x00
 #define MODE_TYPE_PROXY  0x01
@@ -55,10 +55,14 @@ struct sys_config_s
 typedef struct sys_config_s sys_config_t;
 
 // System API
-int           sys_api_init(void* library, handler_api_t* handler_api);
+int           sys_init(void* library, handler_api_t* handler_api);
 sys_config_t* sys_get_config(void);
 
 unsigned int  sys_get_mode(void);
 int           sys_set_mode(unsigned int mode);
+void          sys_set_args(int argc, char** argv);
+
+int           sys_argc(void);
+char**        sys_argv(void);
 
 #endif
