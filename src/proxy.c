@@ -184,6 +184,21 @@ proxy_handler_throttle(cid_t client_id, char direction, unsigned char msg_id,
   return PROXY_OK;
 }
 
+int
+proxy_handler_drop(cid_t client_id, char direction, unsigned char msg_id,
+		   nethost_t* hfrom, nethost_t* hto, objlist_t* data, void* extra)
+{
+  int drop_rule = MSG_TOANY;
+  if(extra) drop_rule = *(int*)extra;
+
+  if(drop_rule == MSG_TOANY)
+    return PROXY_NOSEND;
+  if(drop_rule == direction)
+    return PROXY_NOSEND;
+  else
+    return PROXY_OK;
+}
+
 int proxy_transfer(char mode, nethost_t* host, objlist_t* data, size_t datasize)
 {
   if(mode == MODE_RECV) {
