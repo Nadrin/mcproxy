@@ -53,7 +53,7 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
   strcpy(config->server_port, MCPROXY_DEFAULT_PORT);
   strcpy(config->server_addr, MCPROXY_DEFAULT_HOST);
 
-  config->debug_flag = LOG_NOFLAGS;
+  config->debug = LOG_NOFLAGS;
 
   getcwd(workdir, PATH_MAX);
   sprintf(config->pidfile, "%s/%s", homedir?homedir:"/tmp", MCPROXY_PIDFILE);
@@ -63,7 +63,7 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
   while((c = getopt(argc, argv, "+dp:l:r:L:")) != -1) {
     switch(c) {
     case 'd':
-      config->debug_flag = LOG_DEBUG;
+      config->debug = LOG_DEBUG;
       break;
     case 'p':
       strcpy(config->listen_port, optarg);
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
   system_config = sys_get_config();
   mcp_parse_arguments(argc, argv, system_config);
   
-  if(system_config->debug_flag == LOG_NOFLAGS && 
+  if(system_config->debug == LOG_NOFLAGS && 
      util_file_stat(system_config->pidfile) != 0) {
     fprintf(stderr, "%s: PID file %s exists! Not starting.\n", argv[0], system_config->pidfile);
     exit(EXIT_FAILURE);
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
   
-  loghandle = log_open(system_config->logfile, system_config->debug_flag);
+  loghandle = log_open(system_config->logfile, system_config->debug);
   if(!loghandle) {
     fprintf(stderr, "%s: Could not open log file: %s\n", argv[0], MCPROXY_LOGFILE);
     dlclose(libhandle);
@@ -180,20 +180,20 @@ int main(int argc, char **argv)
   }
   log_set_default(loghandle);
 
-  if(system_config->debug_flag == LOG_NOFLAGS)
+  if(system_config->debug == LOG_NOFLAGS)
     mcp_daemonize();
 
   signal(SIGTERM, sig_quit);
   signal(SIGINT, sig_quit);
 
-  if(system_config->debug_flag == LOG_NOFLAGS)
+  if(system_config->debug == LOG_NOFLAGS)
     util_file_writepid(system_config->pidfile);
 
   retcode = core_main(system_config, &handler_api);
   
   log_close(loghandle);
   dlclose(libhandle);
-  if(system_config->debug_flag == LOG_NOFLAGS)
+  if(system_config->debug == LOG_NOFLAGS)
     unlink(system_config->pidfile);
 
   exit(retcode);

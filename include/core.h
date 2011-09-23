@@ -21,12 +21,15 @@
 #define CORE_EHANDLER       0x03
 #define CORE_EDONE          0x0A
 
+#define CORE_MODE(x)        if(sys_get_mode() & (x))
+
 struct thread_data_s
 {
   int listen_sockfd;
   const char* server_addr;
   const char* server_port;
   volatile unsigned long flags;
+  void* sync_primitive;
 
   cid_t client_id;
   msgdesc_t* lookup;

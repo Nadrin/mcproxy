@@ -22,7 +22,7 @@ static int handler_loginrequest(cid_t client_id, char direction, unsigned char m
 handler_info_t* handler_info(void)
 {
   static handler_info_t info = {
-    "NameChange", "Michał Siejak", 1, MODE_TYPE_PROXY
+    "NameChange", "Michał Siejak", 1, MCP_MODE_PROXY
   };
   return &info;
 }

@@ -12,7 +12,7 @@
 handler_info_t* handler_info(void)
 {
   static handler_info_t info = {
-    "No-op", "Michał Siejak", 1, MODE_TYPE_PROXY
+    "No-op", "Michał Siejak", 1, MCP_MODE_PROXY
   };
   return &info;
 }

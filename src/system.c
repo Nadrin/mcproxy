@@ -14,7 +14,7 @@
 #include <config.h>
 #include <system.h>
 
-static unsigned int  _sys_mode = MODE_TYPE_UNSPEC;
+static unsigned int  _sys_mode = MCP_MODE_UNSPEC;
 static char**        _sys_argv = NULL;
 static int           _sys_argc = 0;
 
@@ -36,6 +36,12 @@ int sys_initapi(void* library, handler_api_t* handler_api)
 sys_config_t* sys_get_config(void)
 {
   static sys_config_t config;
+  static int config_init = 0;
+
+  if(!config_init) {
+    config.pool_size = MCPROXY_THREAD_POOL;
+    config_init = 1;
+  }
   return &config;
 }
 
@@ -44,11 +50,21 @@ unsigned int sys_get_mode(void)
   return _sys_mode;
 }
 
+const char* sys_get_modestring(void)
+{
+  switch(_sys_mode) {
+  case MCP_MODE_CLIENT: return "client";
+  case MCP_MODE_SERVER: return "server";
+  case MCP_MODE_PROXY:  return "proxy";
+  default: return "unspecified";
+  }
+}
+
 int sys_set_mode(unsigned int mode)
 {
-  if(_sys_mode != MODE_TYPE_UNSPEC)
+  if(_sys_mode != MCP_MODE_UNSPEC)
     return SYSTEM_ERROR;
-  if(mode == MODE_TYPE_UNSPEC || mode >= MODE_TYPE_MAX)
+  if(mode == MCP_MODE_UNSPEC || mode > MCP_MODE_MAX)
     return SYSTEM_ERROR;
   _sys_mode = mode;
   return SYSTEM_OK;

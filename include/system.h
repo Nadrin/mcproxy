@@ -14,11 +14,11 @@
 #define SYSTEM_SHUTDOWN  0xFE
 #define SYSTEM_ERROR     0xFF
 
-#define MODE_TYPE_UNSPEC 0x00
-#define MODE_TYPE_PROXY  0x01
-#define MODE_TYPE_CLIENT 0x02
-#define MODE_TYPE_SERVER 0x03
-#define MODE_TYPE_MAX    0x04
+#define MCP_MODE_UNSPEC  0x00
+#define MCP_MODE_CLIENT  0x01
+#define MCP_MODE_SERVER  0x02
+#define MCP_MODE_PROXY   0x04
+#define MCP_MODE_MAX     0x04
 
 // Handler Library API
 struct handler_info_s
@@ -51,8 +51,11 @@ struct sys_config_s
   char logfile[PATH_MAX];
   char pidfile[PATH_MAX];
   char libfile[PATH_MAX];
-  int  debug_flag;
-  unsigned long connect_delay;
+  int  debug;
+
+  size_t         pool_size;
+  int            connect_retry;
+  unsigned long  connect_delay;
 };
 typedef struct sys_config_s sys_config_t;
 
@@ -61,6 +64,7 @@ int           sys_initapi(void* library, handler_api_t* handler_api);
 int           sys_status(void);
 sys_config_t* sys_get_config(void);
 unsigned int  sys_get_mode(void);
+const char*   sys_get_modestring(void);
 int           sys_set_mode(unsigned int mode);
 void          sys_set_args(int argc, char** argv);
 

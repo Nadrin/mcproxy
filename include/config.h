@@ -10,6 +10,11 @@
 
 #include <limits.h>
 
+#define MCPROXY_VERSION_MAJOR 0
+#define MCPROXY_VERSION_MINOR 3
+#define MCPROXY_VERSION_STR   "0.3.0"
+#define MCPROXY_PROTOCOL      18
+
 #define MCPROXY_LOGFILE       "mcproxy.log"
 #define MCPROXY_PIDFILE       "mcproxy.pid"
 #define MCPROXY_DEFAULT_HOST  "localhost"

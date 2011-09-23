@@ -31,7 +31,7 @@ static gamestate_t gamestate;
 handler_info_t* handler_info(void)
 {
   static handler_info_t info = {
-    "ServerLog", "Michał Siejak", 2, MODE_TYPE_PROXY
+    "ServerLog", "Michał Siejak", 2, MCP_MODE_PROXY
   };
   return &info;
 }

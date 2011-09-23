@@ -13,7 +13,6 @@
 #include <proto.h>
 #include <proxy.h>
 
-#define PROTOCOL_VERSION 15
 #define _defmsg(id, format) { id, format, NULL, NULL, NULL, NULL }
 
 const msgdesc_t msgtable[] = {
