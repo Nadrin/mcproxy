@@ -9,6 +9,7 @@
 #define __MCPROXY_CONFIG_H
 
 #include <limits.h>
+#include <platform.h>
 
 #define MCPROXY_VERSION_MAJOR 0
 #define MCPROXY_VERSION_MINOR 3

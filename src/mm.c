@@ -10,12 +10,8 @@
 #include <sys/mman.h>
 #include <pthread.h>
 
+#include <config.h>
 #include <mm.h>
-
-// OSX mmap() workaround
-#ifndef MAP_ANONYMOUS
-#define MAP_ANONYMOUS MAP_ANON
-#endif
 
 static pthread_key_t   default_pool_key;
 static pthread_once_t  default_pool_init = PTHREAD_ONCE_INIT;
@@ -78,4 +74,3 @@ inline void pool_set_default(mempool_t* pool)
 {
   pthread_setspecific(default_pool_key, pool);
 }
-

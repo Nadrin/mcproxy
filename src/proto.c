@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <endian.h>
 
 #include <config.h>
 #include <proto.h>
