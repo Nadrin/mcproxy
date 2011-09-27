@@ -11,6 +11,7 @@
 #include <proxy.h>
 
 #define SYSTEM_OK        0x00
+#define SYSTEM_INVALID   0x01
 #define SYSTEM_SHUTDOWN  0xFE
 #define SYSTEM_ERROR     0xFF
 

@@ -88,15 +88,15 @@ int track_handler_entity(cid_t client_id, char direction, unsigned char msg_id,
 
   proto_getstr(data, 1, entity_name, 256);
 
-  thread_lock();
+  thread_mutex_lock(NULL);
   entity_found = g_list_find_custom(config->gs->playerdb, entity_name, gs_find_byname);
   if(entity_found) {
     entity_player = (player_t*)entity_found->data;
     if((entity_player->flags & GS_PLAYER_HIDDEN)) {
-      thread_unlock();
+      thread_mutex_unlock(NULL);
       return PROXY_NOSEND;
     }
   }
-  thread_unlock();
+  thread_mutex_unlock(NULL);
   return PROXY_OK;
 }

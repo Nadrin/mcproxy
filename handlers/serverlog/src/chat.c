@@ -45,7 +45,7 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
 
   player = gs_get_player();
 
-  thread_lock();  
+  thread_mutex_lock(NULL);  
   args[0] = strtok_r(message, " ", &saveptr);
   args[1] = strtok_r(NULL, " ", &saveptr);
   args[2] = strtok_r(NULL, "\n", &saveptr);
@@ -75,13 +75,13 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
       player->flags |= GS_PLAYER_HIDDEN;
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_unlock();
+	thread_mutex_unlock(NULL);
 	return PROXY_ERROR;
       }
       log_print(NULL, "(%04d) Player %s engaged the cloak",
 		client_id, player->username);
     }
-    thread_unlock();
+    thread_mutex_unlock(NULL);
     return PROXY_NOSEND;
   }
   else if(strcmp(args[0], "/decloak") == 0) {
@@ -90,13 +90,13 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
       player->flags ^= GS_PLAYER_HIDDEN;
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_unlock();
+	thread_mutex_unlock(NULL);
 	return PROXY_ERROR;
       }
       log_print(NULL, "(%04d) Player %s disengaged the cloak",
 		client_id, player->username);
     }
-    thread_unlock();
+    thread_mutex_unlock(NULL);
     return PROXY_NOSEND;
   }
   else if(strcmp(args[0], "/tell") == 0) {
@@ -105,7 +105,7 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
 	      "You whisper to %s: %s", args[1], args[2]);
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_unlock();
+	thread_mutex_unlock(NULL);
 	return PROXY_ERROR;
       }
     }
@@ -114,7 +114,7 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
     GList* players;
     players = g_list_first(config->gs->playerdb);
     if(!players) {
-      thread_unlock();
+      thread_mutex_unlock(NULL);
       return PROXY_ERROR;
     }
 
@@ -122,7 +122,7 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
 	    "Total players: %d ", g_list_length(config->gs->playerdb));
     msg = proto_new("t", text);
     if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-      thread_unlock();
+      thread_mutex_unlock(NULL);
       return PROXY_ERROR;
     }
 
@@ -138,7 +138,7 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
       if(strlen(text) + strlen(uname) >= CHAT_WIDTH) {
 	msg = proto_new("t", text);
 	if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	  thread_unlock();
+	  thread_mutex_unlock(NULL);
 	  return PROXY_ERROR;
 	}
 	strcpy(util_color(text, MCP_COLOR_WHITE), "- ");
@@ -150,14 +150,14 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
     if(strlen(text) > 0) {
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_unlock();
+	thread_mutex_unlock(NULL);
 	return PROXY_ERROR;
       }
     }
-    thread_unlock();
+    thread_mutex_unlock(NULL);
     return PROXY_NOSEND;
   }
 
-  thread_unlock();
+  thread_mutex_unlock(NULL);
   return PROXY_OK;
 }

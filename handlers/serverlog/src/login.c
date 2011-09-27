@@ -50,7 +50,7 @@ int login_event_disconnect(cid_t client_id, unsigned char type,
 			   nethost_t* client, nethost_t* server, void* extra)
 {
   login_handler_config_t* config = (login_handler_config_t*)extra;
-  thread_lock();
+  thread_mutex_lock(NULL);
   {
     GList* found = g_list_find_custom(config->gs->playerdb,
 				      &client_id, gs_find_bycid);
@@ -59,7 +59,7 @@ int login_event_disconnect(cid_t client_id, unsigned char type,
       gs_set_player(NULL);
     }
   }
-  thread_unlock();
+  thread_mutex_unlock(NULL);
   return PROXY_OK;
 }
 
@@ -73,12 +73,12 @@ int login_handler_loginrequest(cid_t client_id, char direction, unsigned char ms
 
   switch(direction) {
   case MSG_TOCLIENT:
-    thread_lock();
+    thread_mutex_lock(NULL);
     {
       GList* found = g_list_find_custom(config->gs->playerdb,
 					&client_id, gs_find_bycid);
       if(!found) {
-	thread_unlock();
+	thread_mutex_unlock(NULL);
 	log_print(NULL, "(%04d) login_handler_loginrequest: No preliminary player data recieved!", client_id);
 	return PROXY_ERROR;
       }
@@ -87,7 +87,7 @@ int login_handler_loginrequest(cid_t client_id, char direction, unsigned char ms
       gs_get_player()->entity_id = proto_geti(data, 0);
       gs_get_player()->dim       = abs(proto_getc(data, 4));
     }
-    thread_unlock();
+    thread_mutex_unlock(NULL);
 
     log_print(NULL, "(%04d) Player logged in: %s %s (with entity ID %d)", client_id,
 	      gs_get_player()->username,
@@ -120,7 +120,7 @@ int login_handler_loginrequest(cid_t client_id, char direction, unsigned char ms
       return PROXY_DISCONNECT;
     }
 
-    thread_lock();
+    thread_mutex_lock(NULL);
     {
       player_t* player;
       GList* found = g_list_find_custom(config->gs->playerdb,
@@ -133,7 +133,7 @@ int login_handler_loginrequest(cid_t client_id, char direction, unsigned char ms
 	player->flags |= GS_PLAYER_OP;
       config->gs->playerdb = g_list_append(config->gs->playerdb, player);
     }
-    thread_unlock();
+    thread_mutex_unlock(NULL);
     break;
   }
   return PROXY_OK;
@@ -145,17 +145,17 @@ int login_handler_kick(cid_t client_id, char direction, unsigned char msg_id,
 {
   login_handler_config_t* config = (login_handler_config_t*)extra;
 
-  thread_lock();
+  thread_mutex_lock(NULL);
   {
     GList* found = g_list_find_custom(config->gs->playerdb,
 				      &client_id, gs_find_bycid);
     if(!found) {
-      thread_unlock();
+      thread_mutex_unlock(NULL);
       return PROXY_OK; // Assume list ping
     }
     config->gs->playerdb = g_list_remove(config->gs->playerdb, found->data);
   }
-  thread_unlock();
+  thread_mutex_unlock(NULL);
 
   gs_set_player(NULL);
   if(direction == MSG_TOSERVER)

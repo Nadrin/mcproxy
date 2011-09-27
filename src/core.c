@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <unistd.h>
 #include <sys/utsname.h>
 
