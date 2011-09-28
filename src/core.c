@@ -24,6 +24,7 @@
 #include <core.h>
 #include <util.h>
 #include <mm.h>
+#include <thread.h>
 
 int core_dispatch(thread_data_t* data, char direction,
 		  nethost_t* host_from, nethost_t* host_to)
@@ -144,7 +145,7 @@ static void* core_thread(void* data)
 
   CORE_MODE(MCP_MODE_SERVER | MCP_MODE_PROXY) {
     client = net_accept(thread_data->listen_sockfd);
-    pthread_barrier_wait((pthread_barrier_t*)thread_data->sync_primitive);
+    thread_barrier_wait((thread_barrier_t*)thread_data->sync_primitive);
     if(!client)
       goto _thread_done;
   }
@@ -223,7 +224,7 @@ static void* core_thread(void* data)
   pool_release(&pool);
 
   CORE_MODE(MCP_MODE_CLIENT) {
-    pthread_barrier_wait((pthread_barrier_t*)thread_data->sync_primitive);
+    thread_barrier_wait((thread_barrier_t*)thread_data->sync_primitive);
   }
   free(thread_data);
   pthread_exit(NULL);
@@ -252,15 +253,17 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
   int      listen_sockfd   = 0;
   uint64_t last_connection = 0;
 
-  pthread_attr_t thread_attr;
-  struct utsname platform_info;
+  thread_barrier_t sync_barrier;
+  pthread_attr_t   thread_attr;
 
+  struct utsname   platform_info;
   uname(&platform_info);
   log_print(NULL, "Minecraft Proxy, version %s starting ...", MCPROXY_VERSION_STR);
   log_print(NULL, "%s %s at %s (%s)",
 	    platform_info.sysname, platform_info.release,
 	    platform_info.nodename, platform_info.machine);
 
+  thread_barrier_init(&sync_barrier, 2);
   pthread_attr_init(&thread_attr);
   pthread_attr_setstacksize(&thread_attr, MCPROXY_THREAD_STACK);
 
@@ -297,11 +300,10 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
   }
   log_print(NULL, "Handler library loaded: %s, version: %d",
 	    handler_info->name, handler_info->version);
-  
+
   log_print(NULL, "Startup completed, entering main loop");
   while(sys_status() == SYSTEM_OK) {
     pthread_t         thread_id;
-    pthread_barrier_t sync_barrier;
     thread_data_t*    thread_data = NULL;
 
     CORE_MODE(MCP_MODE_SERVER | MCP_MODE_PROXY) {
@@ -324,15 +326,11 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
     if(system_config->debug & LOG_DEBUG)
       thread_data->flags |= THREAD_FLAG_DEBUG;
 
-    pthread_barrier_init(&sync_barrier, NULL, 2);
     thread_data->sync_primitive = (void*)&sync_barrier;
-
     memset(&thread_id, 0, sizeof(pthread_t));
     if(pthread_create(&thread_id, &thread_attr, core_thread, (void*)thread_data) != 0)
       break;
-
-    pthread_barrier_wait(&sync_barrier);
-    pthread_barrier_destroy(&sync_barrier);
+    thread_barrier_wait(&sync_barrier);
 
     CORE_MODE(MCP_MODE_CLIENT) {
       if(!system_config->connect_retry) break;
@@ -345,8 +343,10 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
   }
 
   usleep(100000); // Wait for threads to catch mcp_quit
+
   handler_api->handler_shutdown();
   proxy_free(msgtable);
+  thread_barrier_free(&sync_barrier);
   log_print(NULL, "Shutdown completed");
   return EXIT_SUCCESS;
 }

@@ -142,18 +142,23 @@ void thread_barrier_free(thread_barrier_t* barrier)
 
 void thread_barrier_wait(thread_barrier_t* barrier)
 {
+  unsigned short i;
   if(barrier->nthreads == 0)
     return;
 
   pthread_mutex_lock(&barrier->mutex);
-  if(++barrier->count == barrier->nthreads)
-    sem_post(barrier->semaphore[0]);
+  if(++barrier->count == barrier->nthreads) {
+    for(i=0; i<barrier->nthreads; i++)
+      sem_post(barrier->semaphore[0]);
+  }
   pthread_mutex_unlock(&barrier->mutex);
   sem_wait(barrier->semaphore[0]);
 
   pthread_mutex_lock(&barrier->mutex);
-  if(--barrier->count == 0)
-    sem_post(barrier->semaphore[1]);
+  if(--barrier->count == 0) {
+    for(i=0; i<barrier->nthreads; i++)
+      sem_post(barrier->semaphore[1]);
+  }
   pthread_mutex_unlock(&barrier->mutex);
   sem_wait(barrier->semaphore[1]);
 }
