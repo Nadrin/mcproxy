@@ -16,6 +16,11 @@
 #define htobe32(x) OSSwapHostToBigInt32(x)
 #define be64toh(x) OSSwapBigToHostInt64(x)
 #define htobe64(x) OSSwapHostToBigInt64(x)
+
+#ifndef MCPROXY_USE_NAMED_SEMAPHORES
+#define MCPROXY_USE_NAMED_SEMAPHORES 1
+#endif
+
 #else
 #include <endian.h>
 #endif

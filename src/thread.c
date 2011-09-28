@@ -5,7 +5,10 @@
  * See COPYING file for details.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <config.h>
 #include <thread.h>
@@ -102,7 +105,7 @@ int thread_barrier_init(thread_barrier_t* barrier, unsigned short nthreads)
   if(nthreads == 0)
     return SYSTEM_INVALID;
 
-#ifdef __APPLE__
+#ifdef MCPROXY_USE_NAMED_SEMAPHORES
   static unsigned int __semcount = 0;
   sprintf(barrier->name[0], "mcproxy-%d-%d.semaphore", getpid(), __sync_add_and_fetch(&__semcount, 1));
   sprintf(barrier->name[1], "mcproxy-%d-%d.semaphore", getpid(), __sync_add_and_fetch(&__semcount, 1));
@@ -126,7 +129,7 @@ int thread_barrier_init(thread_barrier_t* barrier, unsigned short nthreads)
 
 void thread_barrier_free(thread_barrier_t* barrier)
 {
-#ifdef __APPLE__
+#ifdef MCPROXY_USE_NAMED_SEMAPHORES
   sem_close(barrier->semaphore[0]);
   sem_close(barrier->semaphore[1]);
   sem_unlink(barrier->name[0]);
