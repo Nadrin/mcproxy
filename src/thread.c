@@ -12,10 +12,10 @@
 #include <system.h>
 #include <mm.h>
 
-static pthread_mutex_t   default_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t   barrier_mutex = PTHREAD_MUTEX_INITIALIZER;
-static unsigned short    barrier_count = 0;
-static pthread_barrier_t default_barrier;
+static pthread_mutex_t  default_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t  barrier_mutex = PTHREAD_MUTEX_INITIALIZER;
+static unsigned short   barrier_count = 0;
+static thread_barrier_t default_barrier;
 
 struct entrypoint_info_s
 {
@@ -197,16 +197,16 @@ void thread_sync(unsigned short count)
 {
   pthread_mutex_lock(&barrier_mutex);
   if(barrier_count != count) {
-    pthread_barrier_init(&default_barrier, NULL, count);
+    thread_barrier_init(&default_barrier, count);
     barrier_count = count;
   }
   pthread_mutex_unlock(&barrier_mutex);
 
-  pthread_barrier_wait(&default_barrier);
+  thread_barrier_wait(&default_barrier);
 
   pthread_mutex_lock(&barrier_mutex);
   if(barrier_count > 0) {
-    pthread_barrier_destroy(&default_barrier);
+    thread_barrier_free(&default_barrier);
     barrier_count = 0;
   }
   pthread_mutex_unlock(&barrier_mutex);
