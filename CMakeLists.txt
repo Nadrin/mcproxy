@@ -8,13 +8,14 @@ set(${PROJECT_NAME}_MAJOR_VERSION 0)
 set(${PROJECT_NAME}_MINOR_VERSION 2)
 
 # Project Options
+option(MCPROXY_USE_CLANG "Compile using clang, if it is available" ON)
 option(MCPROXY_USE_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
 option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
 option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
 set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
 
 # Flags/Includes
-add_definitions(-Wall -std=c99 -pedantic)
+add_definitions(-Wall -std=c99 -pedantic-errors)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # OS X Compatiblity
@@ -25,6 +26,12 @@ if(DEFINED APPLE)
 endif()
 
 # Options
+
+if(MCPROXY_USE_CLANG)
+  message(STATUS "Compiling using clang - yes")
+  set(CMAKE_C_COMPILER clang)
+endif()
+
 if(MCPROXY_USE_NAMED_SEMAPHORES)
     add_definitions(-DMCPROXY_USE_NAMED_SEMAPHORES)
 endif()

@@ -22,9 +22,9 @@ extern volatile sig_atomic_t mcp_quit;
 
 int sys_initapi(void* library, handler_api_t* handler_api)
 {
-  handler_api->handler_info     = dlsym(library, "handler_info");
-  handler_api->handler_startup  = dlsym(library, "handler_startup");
-  handler_api->handler_shutdown = dlsym(library, "handler_shutdown");
+  handler_api->handler_info     = (handler_info_func_t) dlsym(library, "handler_info");
+  handler_api->handler_startup  = (handler_startup_func_t) dlsym(library, "handler_startup");
+  handler_api->handler_shutdown = (handler_shutdown_func_t) dlsym(library, "handler_shutdown");
   
   if(!handler_api->handler_info ||
      !handler_api->handler_startup ||
