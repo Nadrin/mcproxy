@@ -1,3 +1,3 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-ADD_LIBRARY(namechange ${HANDLER_MODE} src/namechange.c)
-TARGET_LINK_LIBRARIES(namechange mcproxyapi)
+cmake_minimum_required(VERSION 2.8)
+add_library(namechange ${HANDLER_MODE} src/namechange.c)
+target_link_libraries(namechange mcproxyapi)

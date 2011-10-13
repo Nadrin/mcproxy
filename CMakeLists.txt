@@ -58,6 +58,20 @@ endif()
 # Target Definitions #
 # ================== # 
 
-## mcproxyapi
+## libmcproxyapi
 add_library(mcproxyapi ${PROXYAPI_MODE} src/system.c src/network.c src/proto.c src/msgtable.c src/proxy.c src/util.c src/mm.c src/thread.c src/log.c)
-target_link_libraries(mcproxyapi dl m pthread ${OSX_LIBRARIES})
+target_link_libraries(mcproxyapi dl m pthread ${OSX_SPECIFIC_LIBS})
+
+# mcproxy
+add_executable(mcproxy src/main.c src/core.c)
+add_dependencies(mcproxy mcproxyapi)
+target_link_libraries(mcproxy mcproxyapi ${MXPROXY_EMBEDDED_HANDLER})
+
+
+# ======== #
+# Handlers #
+# ======== #
+
+add_subdirectory(handlers/noop)
+add_subdirectory(handlers/namechange)
+add_subdirectory(handlers/serverlog)

@@ -17,10 +17,10 @@ struct mempool_s
 };
 typedef struct mempool_s mempool_t;
 
-mempool_t*   pool_create(mempool_t* pool, size_t bytes);
-void         pool_release(mempool_t* pool);
-inline void* pool_malloc(mempool_t* pool, size_t bytes);
-inline void  pool_free(mempool_t* pool);
-inline void  pool_set_default(mempool_t* pool);
+mempool_t* pool_create(mempool_t* pool, size_t bytes);
+void       pool_release(mempool_t* pool);
+void*      pool_malloc(mempool_t* pool, size_t bytes);
+void       pool_free(mempool_t* pool);
+void       pool_set_default(mempool_t* pool);
 
 #endif

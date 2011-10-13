@@ -18,7 +18,7 @@ static unsigned int  _sys_mode = MCP_MODE_UNSPEC;
 static char**        _sys_argv = NULL;
 static int           _sys_argc = 0;
 
-extern volatile sig_atomic_t mcp_quit;
+static volatile sig_atomic_t mcp_quit;
 
 int sys_initapi(void* library, handler_api_t* handler_api)
 {
