@@ -91,8 +91,8 @@ gint gs_find_bycid(gconstpointer a, gconstpointer b);
 gint gs_find_byeid(gconstpointer a, gconstpointer b);
 
 // TLS data accessors
-inline void gs_set_player(player_t* player);
-inline player_t* gs_get_player(void);
+void gs_set_player(player_t* player);
+player_t* gs_get_player(void);
 
 char* gs_get_dimstr(const int id);
 void  gs_push_transaction(transaction_t* transact);

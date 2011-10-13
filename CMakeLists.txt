@@ -33,24 +33,29 @@ if(MCPROXY_USE_CLANG)
 endif()
 
 if(MCPROXY_USE_NAMED_SEMAPHORES)
-    add_definitions(-DMCPROXY_USE_NAMED_SEMAPHORES)
+  add_definitions(-DMCPROXY_USE_NAMED_SEMAPHORES)
 endif()
 
 # If a handler is being embedded, the handlers must be compiled as static libraries.
-if(NOT MCPROXY_EMBED_HANDLER EQUAL "")
+if(NOT MCPROXY_EMBEDDED_HANDLER STREQUAL "")
+  message(STATUS "Handlers must be compiled statically to be embedded.")
   set(MCPROXY_HANDLERS_STATIC ON)
 endif()
 
 # If MCPROXY_LIBAPI_STATIC is on, compile a static library, otherwise compile a shared library.
 if(MCPROXY_LIBAPI_STATIC)
+  message(STATUS "Compiling libmcproxy as - static")
   set(PROXYAPI_MODE STATIC)
 else()
+  message(STATUS "Compiling libmcproxy as - shared")
   set(PROXYAPI_MODE SHARED)
 endif()
 
 if(MCPROXY_HANDLERS_STATIC)
+  message(STATUS "Compiling handlers as - static")
   set(HANDLERS_MODE STATIC)
 else()
+  message(STATUS "Compiling handlers as - shared")
   set(HANDLERS_MODE SHARED)
 endif()
 
