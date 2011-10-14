@@ -126,8 +126,9 @@ int util_file_putlog(const char* filename, const char* timefmt, const char* stri
 static size_t
 util_iconv_generic(iconv_t context, char* dest, const size_t destsize, const char* src, const size_t srcsize)
 {
-  char* _dest = (char*)dest;
-  char* _src  = (char*)src;
+  union {const char *cc; char *c;} goddamn_const;
+  goddamn_const.cc = dest; char* _dest = goddamn_const.c;
+  goddamn_const.cc = src;  char* _src  = goddamn_const.c;
   size_t src_bytes = srcsize;
   size_t dst_bytes = destsize;
   
