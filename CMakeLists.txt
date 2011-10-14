@@ -8,7 +8,7 @@ set(${PROJECT_NAME}_MAJOR_VERSION 0)
 set(${PROJECT_NAME}_MINOR_VERSION 2)
 
 # Project Options
-option(MCPROXY_USE_CLANG "Compile using clang, if it is available" ON)
+option(MCPROXY_USE_CLANG "Compile using clang, if it is available" OFF)
 option(MCPROXY_USE_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
 option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
 option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
@@ -18,11 +18,13 @@ set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-m
 add_definitions(-Wall -std=c99 -pedantic-errors)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-# OS X Compatiblity
+# OS X Compatibility
 if(DEFINED APPLE)
-  message(STATUS "Compiling in OS X compatibility mode.")
+  message(STATUS "Compiling in OS X compatibility mode - yes")
   set(OSX_SPECIFIC_LIBS iconv)
   set(MCPROXY_USE_NAMED_SEMAPHORES)
+else()
+  message(STATUS "Compiling in OS X compatibility mode - no")
 endif()
 
 # Options
@@ -30,6 +32,8 @@ endif()
 if(MCPROXY_USE_CLANG)
   message(STATUS "Compiling using clang - yes")
   set(CMAKE_C_COMPILER clang)
+else()
+  message(STATUS "Compiling using clang - no")
 endif()
 
 if(MCPROXY_USE_NAMED_SEMAPHORES)
@@ -38,7 +42,7 @@ endif()
 
 # If a handler is being embedded, the handlers must be compiled as static libraries.
 if(NOT MCPROXY_EMBEDDED_HANDLER STREQUAL "")
-  message(STATUS "Handlers must be compiled statically to be embedded.")
+  message(STATUS "Handlers must be compiled statically to be embedded: compiling handlers as static archives")
   set(MCPROXY_HANDLERS_STATIC ON)
 endif()
 
