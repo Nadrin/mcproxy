@@ -33,7 +33,8 @@ int track_handler_main(cid_t client_id, char direction, unsigned char msg_id,
 		       nethost_t* hfrom, nethost_t* hto, objlist_t* data,
 		       void* extra)
 {
-  track_handler_config_t* config = (track_handler_config_t*)extra;
+  // currently unused. uncomment if you need it.
+  //track_handler_config_t* config = (track_handler_config_t*)extra;
   player_t* player = gs_get_player();
 
   if(!player) return PROXY_OK;

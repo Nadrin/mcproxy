@@ -194,7 +194,7 @@ int proto_recv_meta(nethost_t* host, object_t* curobj)
   metalist->objects = pool_malloc(NULL, MCPROXY_META_MAX * sizeof(object_t));
 
   while(proto_recv_object(host, &metalist->objects[i++], 'c') == 0) {
-    char gvalue = *(char*)metalist->objects[i-1].data;
+    unsigned char gvalue = *(char*)metalist->objects[i-1].data;
     if(gvalue == 127)
       break;
 

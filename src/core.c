@@ -26,6 +26,13 @@
 #include <mm.h>
 #include <thread.h>
 
+// Prototypes
+int core_dispatch(thread_data_t* data, char direction, nethost_t* host_from, nethost_t* host_to);
+int core_loop_client(nethost_t* server, thread_data_t* thread_data);
+int core_loop_server(nethost_t* client, thread_data_t* thread_data);
+int core_loop_proxy(nethost_t* client, nethost_t* server, thread_data_t* thread_data);
+int core_throttle(uint64_t* last, unsigned long delay);
+
 int core_dispatch(thread_data_t* data, char direction,
 		  nethost_t* host_from, nethost_t* host_to)
 {

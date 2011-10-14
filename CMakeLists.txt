@@ -15,7 +15,7 @@ option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
 set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
 
 # Flags/Includes
-add_definitions("-Werrors -Wall -Wextra 
+add_definitions("-Werror -Wall -Wextra 
                  -Wshadow -Wpointer-arith 
                  -Wcast-qual 
                  -Wstrict-prototypes 

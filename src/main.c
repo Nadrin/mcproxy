@@ -20,6 +20,10 @@
 #include <core.h>
 #include <util.h>
 
+// Prototypes 
+void mcp_parse_arguments(int argc, char **argv, sys_config_t* config);
+void mcp_daemonize(void);
+
 // Global quit flag and signal handler
 extern volatile sig_atomic_t mcp_quit;
 static void sig_quit(int sig)
