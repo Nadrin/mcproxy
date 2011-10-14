@@ -141,7 +141,7 @@ util_iconv_generic(iconv_t context, char* dest, const size_t destsize, const cha
     }
   }
   return 0;
-]
+}
 
 size_t util_iconv_ucs2(char* dest, const size_t destsize, const char* src, const size_t srcsize)
 {
