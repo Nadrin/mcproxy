@@ -54,9 +54,7 @@ int   thread_barrier_init(thread_barrier_t* barrier, unsigned short nthreads);
 void  thread_barrier_wait(thread_barrier_t* barrier);
 void  thread_barrier_free(thread_barrier_t* barrier);
 
-int thread_create(thread_object_t* thread, 
-		  thread_func_t entrypoint, void* data,
-		  unsigned long flags, size_t pool_size);
+int thread_create(thread_object_t* thread,  thread_func_t entrypoint, void* data, unsigned long flags, size_t pool_size);
 
 thread_object_t thread_self(void);
 
