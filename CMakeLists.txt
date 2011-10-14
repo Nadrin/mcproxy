@@ -18,7 +18,7 @@ set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-m
 
 # Flags/Includes
 add_definitions("-Werror -Wall -Wextra 
-                 -Wshadow -Wpointer-arith 
+                 -Wpointer-arith 
                  -Wcast-qual 
                  -Wstrict-prototypes 
                  -Wmissing-prototypes 
@@ -30,7 +30,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 if(DEFINED APPLE)
   message(STATUS "Compiling in OS X compatibility mode - yes")
   set(OSX_SPECIFIC_LIBS iconv)
-  set(MCPROXY_USE_NAMED_SEMAPHORES)
+  set(MCPROXY_USE_NAMED_SEMAPHORES ON)
 else()
   message(STATUS "Compiling in OS X compatibility mode - no")
 endif()

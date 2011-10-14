@@ -39,8 +39,8 @@ char* util_time_string(char* buffer, size_t bufmax, const char* format)
 
 char* util_color(char* buffer, const char color)
 {
-  buffer[0] = 0xC2;
-  buffer[1] = 0xA7;
+  buffer[0] = (char)0xC2;
+  buffer[1] = (char)0xA7;
   buffer[2] = color;
   return buffer + 3;
 }
