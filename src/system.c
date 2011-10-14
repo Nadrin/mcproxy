@@ -18,7 +18,8 @@ static unsigned int  _sys_mode = MCP_MODE_UNSPEC;
 static char**        _sys_argv = NULL;
 static int           _sys_argc = 0;
 
-static volatile sig_atomic_t mcp_quit;
+// This is the actual mcp_quit, all other references are extern
+volatile sig_atomic_t mcp_quit = 0;
 
 int sys_initapi(void* library, handler_api_t* handler_api)
 {

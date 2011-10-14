@@ -21,7 +21,7 @@
 #include <util.h>
 
 // Global quit flag and signal handler
-volatile sig_atomic_t mcp_quit = 0;
+extern volatile sig_atomic_t mcp_quit;
 static void sig_quit(int sig)
 {
   mcp_quit = 1;
