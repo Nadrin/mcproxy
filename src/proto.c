@@ -284,7 +284,7 @@ int proto_recv_object(nethost_t* host, object_t* curobj, const char format)
     
     if(host_slen > 0) {
       if(net_recv(host->s, ((char*)curobj->data) + 2, host_slen) != NETOK)
-	return 2;
+        return 2;
     }
     break;
   case 'm': // Metadata

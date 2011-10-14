@@ -119,8 +119,8 @@ nethost_t* net_connect(const char* addr, const char* port, int* error)
   }
 
   if(inet_ntop(p->ai_family,
-	       net_get_inetaddr((struct sockaddr*)p->ai_addr),
-	       addrbuf, sizeof(addrbuf)) == NULL) {
+    net_get_inetaddr((struct sockaddr*)p->ai_addr),
+    addrbuf, sizeof(addrbuf)) == NULL) {
     freeaddrinfo(servinfo);
     close(s);
     return NULL;
