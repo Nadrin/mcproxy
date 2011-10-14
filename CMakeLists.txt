@@ -10,11 +10,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 # Project Options
-option(MCPROXY_USE_CLANG "Compile using clang, if it is available" ON)
+option(MCPROXY_USE_CLANG "Compile using clang, if it is available" OFF)
 option(MCPROXY_USE_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
-option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" ON)
-option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" ON)
-set(MCPROXY_EMBEDDED_HANDLER "noop" CACHE STRING "Embedded handler library for non-modular mode")
+option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
+option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
+set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
 
 # Flags/Includes
 add_definitions("-Werror -Wall -Wextra 

@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -74,21 +74,21 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
       break;
     case 'l':
       if(optarg[0] == '/')
-	strcpy(config->logfile, optarg);
+        strcpy(config->logfile, optarg);
       else
-	sprintf(config->logfile, "%s/%s", workdir, optarg);
+        sprintf(config->logfile, "%s/%s", workdir, optarg);
       break;
     case 'r':
       if(optarg[0] == '/')
-	strcpy(config->pidfile, optarg);
+        strcpy(config->pidfile, optarg);
       else
-	sprintf(config->pidfile, "%s/%s", workdir, optarg);
+        sprintf(config->pidfile, "%s/%s", workdir, optarg);
       break;
     case 'L':
       if(optarg[0] == '/')
-	strcpy(config->libfile, optarg);
+        strcpy(config->libfile, optarg);
       else
-	sprintf(config->libfile, "%s/%s", workdir, optarg);
+        sprintf(config->libfile, "%s/%s", workdir, optarg);
       break;
     default:
       mcp_usage(argv[0]);
