@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -119,8 +119,8 @@ nethost_t* net_connect(const char* addr, const char* port, int* error)
   }
 
   if(inet_ntop(p->ai_family,
-	       net_get_inetaddr((struct sockaddr*)p->ai_addr),
-	       addrbuf, sizeof(addrbuf)) == NULL) {
+    net_get_inetaddr((struct sockaddr*)p->ai_addr),
+    addrbuf, sizeof(addrbuf)) == NULL) {
     freeaddrinfo(servinfo);
     close(s);
     return NULL;

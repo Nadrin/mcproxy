@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -39,8 +39,8 @@ char* util_time_string(char* buffer, size_t bufmax, const char* format)
 
 char* util_color(char* buffer, const char color)
 {
-  buffer[0] = 0xC2;
-  buffer[1] = 0xA7;
+  buffer[0] = (char)0xC2;
+  buffer[1] = (char)0xA7;
   buffer[2] = color;
   return buffer + 3;
 }
@@ -124,12 +124,11 @@ int util_file_putlog(const char* filename, const char* timefmt, const char* stri
 }
 
 static size_t
-util_iconv_generic(iconv_t context,
-		   char* dest, const size_t destsize,
-		   const char* src, const size_t srcsize)
+util_iconv_generic(iconv_t context, char* dest, const size_t destsize, const char* src, const size_t srcsize)
 {
-  char* _dest = (char*)dest;
-  char* _src  = (char*)src;
+  union {const char *cc; char *c;} goddamn_const;
+  goddamn_const.cc = dest; char* _dest = goddamn_const.c;
+  goddamn_const.cc = src;  char* _src  = goddamn_const.c;
   size_t src_bytes = srcsize;
   size_t dst_bytes = destsize;
   
@@ -137,16 +136,15 @@ util_iconv_generic(iconv_t context,
   while(src_bytes > 0) {
     if(iconv(context, &_src, &src_bytes, &_dest, &dst_bytes) == (size_t)(-1)) {
       if(errno == E2BIG)
-	return src_bytes;
+        return src_bytes;
       else
-	return (size_t)(-1);
+        return (size_t)(-1);
     }
   }
   return 0;
-}		   
+}
 
-size_t util_iconv_ucs2(char* dest, const size_t destsize, 
-		       const char* src, const size_t srcsize)
+size_t util_iconv_ucs2(char* dest, const size_t destsize, const char* src, const size_t srcsize)
 {
   iconv_t context;
   size_t retvalue;
@@ -157,8 +155,7 @@ size_t util_iconv_ucs2(char* dest, const size_t destsize,
   return retvalue;
 }
 
-size_t util_iconv_utf8(char* dest, const size_t destsize,
-		       const char* src, const size_t srcsize)
+size_t util_iconv_utf8(char* dest, const size_t destsize, const char* src, const size_t srcsize)
 {
   iconv_t context;
   size_t retvalue;

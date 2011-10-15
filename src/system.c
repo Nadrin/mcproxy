@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -18,13 +18,21 @@ static unsigned int  _sys_mode = MCP_MODE_UNSPEC;
 static char**        _sys_argv = NULL;
 static int           _sys_argc = 0;
 
-extern volatile sig_atomic_t mcp_quit;
+// This is the actual mcp_quit, all other references are extern
+volatile sig_atomic_t mcp_quit = 0;
 
 int sys_initapi(void* library, handler_api_t* handler_api)
 {
-  handler_api->handler_info     = dlsym(library, "handler_info");
-  handler_api->handler_startup  = dlsym(library, "handler_startup");
-  handler_api->handler_shutdown = dlsym(library, "handler_shutdown");
+  // dlsym returns a void*. Casting from an object pointer to a function pointer is dissallowed by the C99 standard.
+  // We can do this in a platform independent way by passing through a union.
+  union {void *optr; void (*fptr)(void); } optr_to_fptr;
+
+  optr_to_fptr.optr = dlsym(library, "handler_info");
+  handler_api->handler_info     = (handler_info_func_t) optr_to_fptr.fptr;
+  optr_to_fptr.optr = dlsym(library, "handler_startup");
+  handler_api->handler_startup  = (handler_startup_func_t) optr_to_fptr.fptr;
+  optr_to_fptr.optr = dlsym(library, "handler_shutdown");
+  handler_api->handler_shutdown = (handler_shutdown_func_t) optr_to_fptr.fptr;
   
   if(!handler_api->handler_info ||
      !handler_api->handler_startup ||

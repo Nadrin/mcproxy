@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -166,9 +166,7 @@ void thread_barrier_wait(thread_barrier_t* barrier)
   sem_wait(barrier->semaphore[1]);
 }
 
-int thread_create(thread_object_t* thread, 
-		  thread_func_t entrypoint, void* data,
-		  unsigned long flags, size_t pool_size)
+int thread_create(thread_object_t* thread,thread_func_t entrypoint, void* data, unsigned long flags, size_t pool_size)
 {
   pthread_t thread_id;
 

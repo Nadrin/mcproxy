@@ -1,3 +1,3 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-ADD_LIBRARY(noop ${HANDLER_MODE} src/noop.c)
-TARGET_LINK_LIBRARIES(noop mcproxyapi)
+cmake_minimum_required(VERSION 2.8)
+add_library(noop ${HANDLERS_MODE} src/noop.c)
+target_link_libraries(noop mcproxyapi)

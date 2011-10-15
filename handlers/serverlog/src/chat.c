@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  * ServerLog handler library.
  *
  * Licensed under MIT open-source license.
@@ -24,8 +24,8 @@ void chat_init_config(chat_handler_config_t* cfg, gamestate_t* gs)
 }
 
 int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
-		      nethost_t* hfrom, nethost_t* hto, objlist_t* data,
-		      void* extra)
+          nethost_t* hfrom, nethost_t* hto, objlist_t* data,
+          void* extra)
 {
   chat_handler_config_t* config = (chat_handler_config_t*)extra;
   player_t* player;
@@ -54,8 +54,8 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
     if(args[1] && (player->flags & GS_PLAYER_OP)) {
       GList* found = g_list_find_custom(config->gs->playerdb, args[1], gs_find_byname);
       if(found) {
-	player_t* player = (player_t*)found->data;
-	player->flags |= GS_PLAYER_OP;
+        player = (player_t*)found->data;
+        player->flags |= GS_PLAYER_OP;
       }
     }
   }
@@ -63,9 +63,9 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
     if(args[1] && (player->flags & GS_PLAYER_OP)) {
       GList* found = g_list_find_custom(config->gs->playerdb, args[1], gs_find_byname);
       if(found) {
-	player_t* player = (player_t*)found->data;
-	player->flags ^= GS_PLAYER_OP;
-	player->flags ^= GS_PLAYER_HIDDEN;
+        player = (player_t*)found->data;
+        player->flags ^= GS_PLAYER_OP;
+        player->flags ^= GS_PLAYER_HIDDEN;
       }
     }
   }
@@ -75,11 +75,11 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
       player->flags |= GS_PLAYER_HIDDEN;
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_mutex_unlock(NULL);
-	return PROXY_ERROR;
+        thread_mutex_unlock(NULL);
+        return PROXY_ERROR;
       }
       log_print(NULL, "(%04d) Player %s engaged the cloak",
-		client_id, player->username);
+      client_id, player->username);
     }
     thread_mutex_unlock(NULL);
     return PROXY_NOSEND;
@@ -90,11 +90,11 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
       player->flags ^= GS_PLAYER_HIDDEN;
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_mutex_unlock(NULL);
-	return PROXY_ERROR;
+        thread_mutex_unlock(NULL);
+        return PROXY_ERROR;
       }
       log_print(NULL, "(%04d) Player %s disengaged the cloak",
-		client_id, player->username);
+    client_id, player->username);
     }
     thread_mutex_unlock(NULL);
     return PROXY_NOSEND;
@@ -102,11 +102,11 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
   else if(strcmp(args[0], "/tell") == 0) {
     if(args[1] && args[2]) {
       sprintf(util_color(text, MCP_COLOR_GRAY),
-	      "You whisper to %s: %s", args[1], args[2]);
+        "You whisper to %s: %s", args[1], args[2]);
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_mutex_unlock(NULL);
-	return PROXY_ERROR;
+  thread_mutex_unlock(NULL);
+  return PROXY_ERROR;
       }
     }
   }
@@ -119,7 +119,7 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
     }
 
     sprintf(util_color(text, MCP_COLOR_YELLOW),
-	    "Total players: %d ", g_list_length(config->gs->playerdb));
+      "Total players: %d ", g_list_length(config->gs->playerdb));
     msg = proto_new("t", text);
     if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
       thread_mutex_unlock(NULL);
@@ -128,20 +128,20 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
 
     strcpy(text, "- ");
     do {
-      player_t* player = (player_t*)players->data;
+      player = (player_t*)players->data;
       char uname[100];
       if((player->flags & GS_PLAYER_OP))
-	strcpy(util_color(uname, MCP_COLOR_RED), player->username);
+  strcpy(util_color(uname, MCP_COLOR_RED), player->username);
       else
-	strcpy(util_color(uname, MCP_COLOR_WHITE), player->username);
+  strcpy(util_color(uname, MCP_COLOR_WHITE), player->username);
       
       if(strlen(text) + strlen(uname) >= CHAT_WIDTH) {
-	msg = proto_new("t", text);
-	if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	  thread_mutex_unlock(NULL);
-	  return PROXY_ERROR;
-	}
-	strcpy(util_color(text, MCP_COLOR_WHITE), "- ");
+  msg = proto_new("t", text);
+  if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
+    thread_mutex_unlock(NULL);
+    return PROXY_ERROR;
+  }
+  strcpy(util_color(text, MCP_COLOR_WHITE), "- ");
       }
       strcat(text, uname);
       strcat(text, " ");
@@ -150,8 +150,8 @@ int chat_handler_main(cid_t client_id, char direction, unsigned char msg_id,
     if(strlen(text) > 0) {
       msg = proto_new("t", text);
       if(proxy_sendmsg(0x03, hfrom, msg, OBJFLAG_NORMAL) != PROXY_OK) {
-	thread_mutex_unlock(NULL);
-	return PROXY_ERROR;
+  thread_mutex_unlock(NULL);
+  return PROXY_ERROR;
       }
     }
     thread_mutex_unlock(NULL);

@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -24,9 +24,7 @@ static void pool_global_init(void)
 mempool_t* pool_create(mempool_t* pool, size_t bytes)
 {
   pthread_once(&default_pool_init, pool_global_init);
-  pool->base = mmap(NULL, bytes, PROT_READ | PROT_WRITE,
-		    MAP_PRIVATE | MAP_ANONYMOUS,
-		    -1, 0);
+  pool->base = mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 1, 0);
   
   if(pool->base == MAP_FAILED) {
     pool->base = NULL;

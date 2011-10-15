@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -20,5 +20,10 @@
 #include <mm.h>
 #include <thread.h>
 #include <log.h>
+
+// API
+handler_info_t* handler_info(void);
+int handler_startup(msgdesc_t* msglookup, event_t* events);
+int handler_shutdown(void);
 
 #endif
