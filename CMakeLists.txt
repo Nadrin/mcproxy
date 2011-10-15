@@ -27,12 +27,10 @@ add_definitions("-Werror -Wall -Wextra
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # OS X Compatibility
+message(STATUS "Compiling in OS X compatibility mode - ${APPLE}")
 if(DEFINED APPLE)
-  message(STATUS "Compiling in OS X compatibility mode - yes")
   set(OSX_SPECIFIC_LIBS iconv)
   set(MCPROXY_USE_NAMED_SEMAPHORES ON)
-else()
-  message(STATUS "Compiling in OS X compatibility mode - no")
 endif()
 
 ##Options
