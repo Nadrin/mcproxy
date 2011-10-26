@@ -26,15 +26,8 @@
 #include <mm.h>
 #include <thread.h>
 
-// Prototypes
-int core_dispatch(thread_data_t* data, char direction, nethost_t* host_from, nethost_t* host_to);
-int core_loop_client(nethost_t* server, thread_data_t* thread_data);
-int core_loop_server(nethost_t* client, thread_data_t* thread_data);
-int core_loop_proxy(nethost_t* client, nethost_t* server, thread_data_t* thread_data);
-int core_throttle(uint64_t* last, unsigned long delay);
-
-int core_dispatch(thread_data_t* data, char direction,
-  nethost_t* host_from, nethost_t* host_to)
+static int core_dispatch(thread_data_t* data, char direction,
+                         nethost_t* host_from, nethost_t* host_to)
 {
   unsigned char msgid;
   msgdesc_t* msgdesc = NULL;
@@ -65,8 +58,8 @@ int core_dispatch(thread_data_t* data, char direction,
   // Datahelper (from -> to)
   if(msgdesc->datahelper) {
     if(msgdesc->datahelper(data->client_id, MODE_RECV,
-      msgid, host_from,
-      objlist, msgdesc->datahelper_extra) != PROXY_OK)
+                           msgid, host_from,
+                           objlist, msgdesc->datahelper_extra) != PROXY_OK)
       return CORE_EDATAHELPER;
   }
   
@@ -74,8 +67,8 @@ int core_dispatch(thread_data_t* data, char direction,
   handler_result = PROXY_OK;
   if(msgdesc->handler) {
     handler_result = msgdesc->handler(data->client_id, direction,
-    msgid, host_from, host_to,
-    objlist, msgdesc->handler_extra);
+                                      msgid, host_from, host_to,
+                                      objlist, msgdesc->handler_extra);
     if(handler_result == PROXY_ERROR)
       return CORE_EHANDLER;
   }
@@ -93,8 +86,8 @@ int core_dispatch(thread_data_t* data, char direction,
     // Datahelper (to -> from)
     if(msgdesc->datahelper) {
       if(msgdesc->datahelper(data->client_id, MODE_SEND,
-        msgid, host_to,
-        objlist, msgdesc->datahelper_extra) != PROXY_OK)
+                             msgid, host_to,
+                             objlist, msgdesc->datahelper_extra) != PROXY_OK)
         return CORE_EDATAHELPER;
     }
   }
@@ -104,7 +97,7 @@ int core_dispatch(thread_data_t* data, char direction,
   return (msgid != 0xFF)?CORE_EOK:CORE_EDONE;
 }
 
-int core_loop_client(nethost_t* server, thread_data_t* thread_data)
+static int core_loop_client(nethost_t* server, thread_data_t* thread_data)
 {
   if(net_select_rd(1, server->s) == 0)
     return CORE_ENETWORK;
@@ -112,7 +105,7 @@ int core_loop_client(nethost_t* server, thread_data_t* thread_data)
   return core_dispatch(thread_data, MSG_TOCLIENT, server, NULL);
 }
 
-int core_loop_server(nethost_t* client, thread_data_t* thread_data)
+static int core_loop_server(nethost_t* client, thread_data_t* thread_data)
 {
   if(net_select_rd(1, client->s) == 0)
     return CORE_ENETWORK;
@@ -120,7 +113,7 @@ int core_loop_server(nethost_t* client, thread_data_t* thread_data)
   return core_dispatch(thread_data, MSG_TOSERVER, client, NULL);
 }
 
-int core_loop_proxy(nethost_t* client, nethost_t* server, thread_data_t* thread_data)
+static int core_loop_proxy(nethost_t* client, nethost_t* server, thread_data_t* thread_data)
 {
   int net_error;
   unsigned long sockready = net_select_rd(2, client->s, server->s);
@@ -165,7 +158,7 @@ static void* core_thread(void* data)
 
   if(!pool_create(&pool, sys_get_config()->pool_size)) {
     log_print(NULL, "(%04d) Thread memory pool allocation failed",
-    thread_data->client_id);
+              thread_data->client_id);
     goto _thread_exit;
   }
   pool_set_default(&pool);
@@ -173,20 +166,20 @@ static void* core_thread(void* data)
   ev = &thread_data->events[EVENT_CONNECTED];
   if(ev->callback) {
     if(ev->callback(thread_data->client_id, EVENT_CONNECTED, client, server,
-       ev->callback_extra) != PROXY_OK) {
+                    ev->callback_extra) != PROXY_OK) {
       log_print(NULL, "(%04d) CONNECTED event callback returned error status",
-      thread_data->client_id);
+                thread_data->client_id);
       goto _thread_exit;
     }
   }
 
   CORE_MODE(MCP_MODE_CLIENT) {
     log_print(NULL, "(%04d) Connected to server at %s on port %d",
-    thread_data->client_id, thread_data->server_addr, thread_data->server_port);
+              thread_data->client_id, thread_data->server_addr, thread_data->server_port);
   }
   CORE_MODE(MCP_MODE_SERVER | MCP_MODE_PROXY) {
     log_print(NULL, "(%04d) Client connected from %s on port %d",
-    thread_data->client_id, client->addr, client->port);
+              thread_data->client_id, client->addr, client->port);
   }
 
   thread_data->flags |= THREAD_FLAG_RUNNING;
@@ -210,7 +203,7 @@ static void* core_thread(void* data)
   ev = &thread_data->events[EVENT_DISCONNECTED];
   if(ev->callback) {
     if(ev->callback(thread_data->client_id, EVENT_DISCONNECTED, client, server,
-       ev->callback_extra) != PROXY_OK)
+                    ev->callback_extra) != PROXY_OK)
       log_print(NULL, "(%04d) DISCONNECTED event callback returned error status", thread_data->client_id);
   }
   
@@ -236,7 +229,7 @@ static void* core_thread(void* data)
   pthread_exit(NULL);
 }
 
-int core_throttle(uint64_t* last, unsigned long delay)
+static int core_throttle(uint64_t* last, unsigned long delay)
 {
   int status;
   while(util_time() - *last < delay) {
@@ -315,7 +308,7 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
     CORE_MODE(MCP_MODE_SERVER | MCP_MODE_PROXY) {
       if(!(net_select_rd(1, listen_sockfd) & 0x01))
         continue;
-      }
+    }
     if(core_throttle(&last_connection, system_config->connect_delay) != SYSTEM_OK)
       break;
 

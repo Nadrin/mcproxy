@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 # =========== # 
 project(mcproxy)
 set(${PROJECT_NAME}_MAJOR_VERSION 0)
-set(${PROJECT_NAME}_MINOR_VERSION 2)
+set(${PROJECT_NAME}_MINOR_VERSION 3)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
@@ -25,6 +25,11 @@ add_definitions("-Werror -Wall -Wextra
                  -Wno-unused-parameter 
                  -std=c99 -fstrict-aliasing -pedantic")
 include_directories(${PROJECT_SOURCE_DIR}/include)
+
+# Feature macros
+add_definitions("-D_POSIX_SOURCE 
+                 -D_POSIX_C_SOURCE=200112L 
+                 -D_BSD_SOURCE")
 
 # OS X Compatibility
 message(STATUS "Compiling in OS X compatibility mode - ${APPLE}")

@@ -124,11 +124,14 @@ int util_file_putlog(const char* filename, const char* timefmt, const char* stri
 }
 
 static size_t
-util_iconv_generic(iconv_t context, char* dest, const size_t destsize, const char* src, const size_t srcsize)
+util_iconv_generic(iconv_t context, char* dest, const size_t destsize,
+                   const char* src, const size_t srcsize)
 {
-  union {const char *cc; char *c;} goddamn_const;
-  goddamn_const.cc = dest; char* _dest = goddamn_const.c;
-  goddamn_const.cc = src;  char* _src  = goddamn_const.c;
+  char *_src, *_dest;  
+  union {const char *cc; char *c;} const_cast;
+  
+  const_cast.cc = src; _src  = const_cast.c;
+  const_cast.cc = src; _dest = const_cast.c;
   size_t src_bytes = srcsize;
   size_t dst_bytes = destsize;
   
@@ -144,7 +147,8 @@ util_iconv_generic(iconv_t context, char* dest, const size_t destsize, const cha
   return 0;
 }
 
-size_t util_iconv_ucs2(char* dest, const size_t destsize, const char* src, const size_t srcsize)
+size_t util_iconv_ucs2(char* dest, const size_t destsize,
+                       const char* src, const size_t srcsize)
 {
   iconv_t context;
   size_t retvalue;
@@ -155,7 +159,8 @@ size_t util_iconv_ucs2(char* dest, const size_t destsize, const char* src, const
   return retvalue;
 }
 
-size_t util_iconv_utf8(char* dest, const size_t destsize, const char* src, const size_t srcsize)
+size_t util_iconv_utf8(char* dest, const size_t destsize,
+                       const char* src, const size_t srcsize)
 {
   iconv_t context;
   size_t retvalue;

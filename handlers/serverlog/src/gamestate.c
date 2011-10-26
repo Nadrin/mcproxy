@@ -87,13 +87,13 @@ int gs_call_transaction(cid_t client_id, unsigned short id,
 
 gint gs_find_byname(gconstpointer a, gconstpointer b)
 {
-  return strncasecmp(((player_t*)a)->username, (const char*)b, 50);
+  return strncasecmp(((const player_t*)a)->username, (const char*)b, 50);
 }
 
 gint gs_find_bycid(gconstpointer a, gconstpointer b)
 {
-  cid_t cid_a = ((player_t*)a)->client_id;
-  cid_t cid_b = *(cid_t*)b;
+  cid_t cid_a = ((const player_t*)a)->client_id;
+  cid_t cid_b = *(const cid_t*)b;
 
   if(cid_a < cid_b)
     return -1;
@@ -104,8 +104,8 @@ gint gs_find_bycid(gconstpointer a, gconstpointer b)
 
 gint gs_find_byeid(gconstpointer a, gconstpointer b)
 {
-  int eid_a = ((player_t*)a)->entity_id;
-  int eid_b = *(cid_t*)b;
+  int eid_a = ((const player_t*)a)->entity_id;
+  int eid_b = *(const cid_t*)b;
 
   if(eid_a < eid_b)
     return -1;

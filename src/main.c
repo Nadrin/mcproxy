@@ -20,10 +20,6 @@
 #include <core.h>
 #include <util.h>
 
-// Prototypes 
-void mcp_parse_arguments(int argc, char **argv, sys_config_t* config);
-void mcp_daemonize(void);
-
 // Global quit flag and signal handler
 extern volatile sig_atomic_t mcp_quit;
 static void sig_quit(int sig)
@@ -47,7 +43,7 @@ static void mcp_usage(const char* progname)
   exit(EXIT_FAILURE);
 }
 
-void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
+static void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
 {
   int c, i;
   char  workdir[PATH_MAX];
@@ -113,7 +109,7 @@ void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
     fprintf(stderr, "%s: Warning, no HOME environment variable defined!\n", argv[0]);
 }
 
-void mcp_daemonize(void)
+static void mcp_daemonize(void)
 {
   pid_t pid, parent;
   
