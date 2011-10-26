@@ -32,11 +32,13 @@ add_definitions("-D_POSIX_SOURCE
                  -D_BSD_SOURCE")
 
 # OS X Compatibility
-message(STATUS "Compiling in OS X compatibility mode - ${APPLE}")
 if(DEFINED APPLE)
+  message(STATUS "Compiling in OS X compatibility mode - yes")
   set(OSX_SPECIFIC_LIBS iconv)
   set(MCPROXY_USE_CLANG ON)
   set(MCPROXY_USE_NAMED_SEMAPHORES ON)
+else()
+  message(STATUS "Compiling in OS X compatibility mode - no")
 endif()
 
 ##Options
@@ -59,10 +61,10 @@ if(NOT MCPROXY_EMBEDDED_HANDLER STREQUAL "")
   if(NOT MCPROXY_HANDLERS_STATIC)
     message(STATUS "Handlers must be compiled statically to be embedded: compiling handlers as static archives")
   endif()
-  message(STATUS "Embedding handler? - ${MCPROXY_EMBEDDED_HANDLER}")
+  message(STATUS "Embedding handler - ${MCPROXY_EMBEDDED_HANDLER}")
   set(MCPROXY_HANDLERS_STATIC ON)
 else()
-  message(STATUS "Embedding handler? - no")
+  message(STATUS "Embedding handler - (none)")
 endif()
 
 # If MCPROXY_LIBAPI_STATIC is on, compile a static library, otherwise compile a shared library.
