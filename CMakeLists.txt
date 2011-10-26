@@ -10,7 +10,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 # Project Options
-option(MCPROXY_USE_CLANG "Compile using clang, if it is available" OFF)
 option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
 option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
 set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
@@ -33,19 +32,9 @@ add_definitions("-D_POSIX_SOURCE
 # OS X Compatibility
 if(DEFINED APPLE)
   message(STATUS "Compiling in OS X compatibility mode - yes")
-  add_definitions("-D_DARWIN_C_SOURCE") # Enable Darwin extensions to the POSIX specification. MAP_ANON is not POSIX.
   set(OSX_SPECIFIC_LIBS iconv)
-  set(MCPROXY_USE_CLANG ON)
 else()
   message(STATUS "Compiling in OS X compatibility mode - no")
-endif()
-
-##Options
-if(MCPROXY_USE_CLANG)
-  message(STATUS "Compiling using clang - yes")
-  set(CMAKE_C_COMPILER clang)
-else()
-  message(STATUS "Compiling using clang - no")
 endif()
 
 # If a handler is being embedded, the handlers must be compiled as static libraries.
