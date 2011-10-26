@@ -11,7 +11,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 # Project Options
 option(MCPROXY_USE_CLANG "Compile using clang, if it is available" OFF)
-option(MCPROXY_USE_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
 option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
 option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
 set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
@@ -20,13 +19,13 @@ set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-m
 add_definitions("-Werror -Wall -Wextra 
                  -Wpointer-arith 
                  -Wcast-qual 
-                 -Wstrict-prototypes 
+                 -Wstrict-prototypes
                  -Wmissing-prototypes 
                  -Wno-unused-parameter 
                  -std=c99 -fstrict-aliasing -pedantic")
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-# Feature macros
+# POSIX/BSD Feature Macros
 add_definitions("-D_POSIX_SOURCE 
                  -D_POSIX_C_SOURCE=200112L 
                  -D_BSD_SOURCE")
@@ -37,7 +36,6 @@ if(DEFINED APPLE)
   add_definitions("-D_DARWIN_C_SOURCE") # Enable Darwin extensions to the POSIX specification. MAP_ANON is not POSIX.
   set(OSX_SPECIFIC_LIBS iconv)
   set(MCPROXY_USE_CLANG ON)
-  set(MCPROXY_USE_NAMED_SEMAPHORES ON)
 else()
   message(STATUS "Compiling in OS X compatibility mode - no")
 endif()
@@ -48,13 +46,6 @@ if(MCPROXY_USE_CLANG)
   set(CMAKE_C_COMPILER clang)
 else()
   message(STATUS "Compiling using clang - no")
-endif()
-
-if(MCPROXY_USE_NAMED_SEMAPHORES)
-  message(STATUS "Using named semaphores - yes")
-  add_definitions(-DMCPROXY_USE_NAMED_SEMAPHORES)
-else()
-  message(STATUS "Using named semaphores - no")
 endif()
 
 # If a handler is being embedded, the handlers must be compiled as static libraries.

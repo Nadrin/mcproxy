@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <sys/semaphore.h>
+
 #include <config.h>
 #include <thread.h>
 #include <system.h>
@@ -105,21 +107,10 @@ int thread_barrier_init(thread_barrier_t* barrier, unsigned short nthreads)
   if(nthreads == 0)
     return SYSTEM_INVALID;
 
-#ifdef MCPROXY_USE_NAMED_SEMAPHORES
-  static unsigned int __semcount = 0;
-  sprintf(barrier->name[0], "mcproxy-%d-%d.semaphore", getpid(), __sync_add_and_fetch(&__semcount, 1));
-  sprintf(barrier->name[1], "mcproxy-%d-%d.semaphore", getpid(), __sync_add_and_fetch(&__semcount, 1));
-  barrier->semaphore[0] = sem_open(barrier->name[0], O_CREAT, 0, 0); 
-  barrier->semaphore[1] = sem_open(barrier->name[1], O_CREAT, 0, 0);
-
-  if(barrier->semaphore[0] == SEM_FAILED || barrier->semaphore[1] == SEM_FAILED)
-    return SYSTEM_ERROR;
-#else
   barrier->semaphore[0] = malloc(sizeof(sem_t));
   barrier->semaphore[1] = malloc(sizeof(sem_t));
   sem_init(barrier->semaphore[0], 0, 0);
   sem_init(barrier->semaphore[1], 0, 0);
-#endif
 
   pthread_mutex_init(&barrier->mutex, NULL);
   barrier->count    = 0;
@@ -129,17 +120,10 @@ int thread_barrier_init(thread_barrier_t* barrier, unsigned short nthreads)
 
 void thread_barrier_free(thread_barrier_t* barrier)
 {
-#ifdef MCPROXY_USE_NAMED_SEMAPHORES
-  sem_close(barrier->semaphore[0]);
-  sem_close(barrier->semaphore[1]);
-  sem_unlink(barrier->name[0]);
-  sem_unlink(barrier->name[1]);
-#else
   sem_destroy(barrier->semaphore[0]);
   sem_destroy(barrier->semaphore[1]);
   free(barrier->semaphore[0]);
   free(barrier->semaphore[1]);
-#endif
   barrier->nthreads = 0;
 }
 
