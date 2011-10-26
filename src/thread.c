@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <sys/semaphore.h>
+#include <semaphore.h>
 
 #include <config.h>
 #include <thread.h>
