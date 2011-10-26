@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -194,7 +194,7 @@ int proto_recv_meta(nethost_t* host, object_t* curobj)
   metalist->objects = pool_malloc(NULL, MCPROXY_META_MAX * sizeof(object_t));
 
   while(proto_recv_object(host, &metalist->objects[i++], 'c') == 0) {
-    char gvalue = *(char*)metalist->objects[i-1].data;
+    unsigned char gvalue = *(char*)metalist->objects[i-1].data;
     if(gvalue == 127)
       break;
 
@@ -284,7 +284,7 @@ int proto_recv_object(nethost_t* host, object_t* curobj, const char format)
     
     if(host_slen > 0) {
       if(net_recv(host->s, ((char*)curobj->data) + 2, host_slen) != NETOK)
-	return 2;
+        return 2;
     }
     break;
   case 'm': // Metadata

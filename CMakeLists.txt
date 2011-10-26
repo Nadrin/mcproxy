@@ -1,43 +1,101 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT(MCPROXY)
-SET(CMAKE_C_FLAGS "-g -O2 -fPIC -pipe -Wall")
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-INCLUDE_DIRECTORIES(${MCPROXY_SOURCE_DIR}/include)
+cmake_minimum_required(VERSION 2.8)
 
-OPTION(MCPROXY_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
-OPTION(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
-OPTION(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
-SET(MCPROXY_EMBED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
+# =========== #
+# Main Config #
+# =========== # 
+project(mcproxy)
+set(${PROJECT_NAME}_MAJOR_VERSION 0)
+set(${PROJECT_NAME}_MINOR_VERSION 2)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-IF(MCPROXY_NAMED_SEMAPHORES)
-  ADD_DEFINITIONS(-DMCPROXY_USE_NAMED_SEMAPHORES)
-ENDIF(MCPROXY_NAMED_SEMAPHORES)
+# Project Options
+option(MCPROXY_USE_CLANG "Compile using clang, if it is available" ON)
+option(MCPROXY_USE_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
+option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
+option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
+set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
 
-IF(NOT MCPROXY_EMBED_HANDLER EQUAL "")
-  SET(MCPROXY_HANDLERS_STATIC ON)
-ENDIF(NOT MCPROXY_EMBED_HANDLER EQUAL "")
+# Flags/Includes
+add_definitions("-Werror -Wall -Wextra 
+                 -Wpointer-arith 
+                 -Wcast-qual 
+                 -Wstrict-prototypes 
+                 -Wmissing-prototypes 
+                 -Wno-unused-parameter 
+                 -std=c99 -fstrict-aliasing -pedantic")
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
-IF(MCPROXY_LIBAPI_STATIC)
-  SET(PROXYAPI_MODE STATIC)
-ELSE(MCPROXY_LIBAPI_STATIC)
-  SET(PROXYAPI_MODE SHARED)
-ENDIF(MCPROXY_LIBAPI_STATIC)
+# OS X Compatibility
+message(STATUS "Compiling in OS X compatibility mode - ${APPLE}")
+if(DEFINED APPLE)
+  set(OSX_SPECIFIC_LIBS iconv)
+  set(MCPROXY_USE_NAMED_SEMAPHORES ON)
+endif()
 
-IF(MCPROXY_HANDLERS_STATIC)
-  SET(HANDLER_MODE STATIC)
-ELSE(MCPROXY_HANDLERS_STATIC)
-  SET(HANDLER_MODE SHARED)
-ENDIF(MCPROXY_HANDLERS_STATIC)
+##Options
+if(MCPROXY_USE_CLANG)
+  message(STATUS "Compiling using clang - yes")
+  set(CMAKE_C_COMPILER clang)
+else()
+  message(STATUS "Compiling using clang - no")
+endif()
 
-ADD_LIBRARY(mcproxyapi ${PROXYAPI_MODE} src/system.c src/network.c src/proto.c src/msgtable.c src/proxy.c src/util.c src/mm.c src/thread.c src/log.c)
-ADD_EXECUTABLE(mcproxy src/main.c src/core.c)
+if(MCPROXY_USE_NAMED_SEMAPHORES)
+  message(STATUS "Using named semaphores - yes")
+  add_definitions(-DMCPROXY_USE_NAMED_SEMAPHORES)
+else()
+  message(STATUS "Using named semaphores - no")
+endif()
 
-IF(DEFINED APPLE)
-  SET(OSX_LIBRARIES iconv)
-  ADD_DEFINITIONS(-DMCPROXY_USE_NAMED_SEMAPHORES)
-ENDIF(DEFINED APPLE)
-TARGET_LINK_LIBRARIES(mcproxy mcproxyapi ${MCPROXY_EMBED_HANDLER} dl m pthread ${OSX_LIBRARIES})
+# If a handler is being embedded, the handlers must be compiled as static libraries.
+if(NOT MCPROXY_EMBEDDED_HANDLER STREQUAL "")
+  if(NOT MCPROXY_HANDLERS_STATIC)
+    message(STATUS "Handlers must be compiled statically to be embedded: compiling handlers as static archives")
+  endif()
+  message(STATUS "Embedding handler? - ${MCPROXY_EMBEDDED_HANDLER}")
+  set(MCPROXY_HANDLERS_STATIC ON)
+else()
+  message(STATUS "Embedding handler? - no")
+endif()
 
-ADD_SUBDIRECTORY(handlers/noop)
-ADD_SUBDIRECTORY(handlers/namechange)
-ADD_SUBDIRECTORY(handlers/serverlog)
+# If MCPROXY_LIBAPI_STATIC is on, compile a static library, otherwise compile a shared library.
+if(MCPROXY_LIBAPI_STATIC)
+  message(STATUS "Compiling libmcproxy as - static")
+  set(PROXYAPI_MODE STATIC)
+else()
+  message(STATUS "Compiling libmcproxy as - shared")
+  set(PROXYAPI_MODE SHARED)
+endif()
+
+if(MCPROXY_HANDLERS_STATIC)
+  message(STATUS "Compiling handlers as - static")
+  set(HANDLERS_MODE STATIC)
+else()
+  message(STATUS "Compiling handlers as - shared")
+  set(HANDLERS_MODE SHARED)
+endif()
+
+# =========== #
+# API LIbrary #
+# =========== # 
+
+## libmcproxyapi
+add_library(mcproxyapi ${PROXYAPI_MODE} src/system.c src/network.c src/proto.c src/msgtable.c src/proxy.c src/util.c src/mm.c src/thread.c src/log.c)
+target_link_libraries(mcproxyapi dl m pthread ${OSX_SPECIFIC_LIBS})
+
+# ======== #
+# Handlers #
+# ======== #
+
+add_subdirectory(handlers/noop)
+add_subdirectory(handlers/namechange)
+add_subdirectory(handlers/serverlog)
+
+# ========== #
+# Executable #
+# ========== #
+
+add_executable(mcproxy src/main.c src/core.c)
+add_dependencies(mcproxy mcproxyapi ${MCPROXY_EMBEDDED_HANDLER})
+target_link_libraries(mcproxy mcproxyapi ${MCPROXY_EMBEDDED_HANDLER})

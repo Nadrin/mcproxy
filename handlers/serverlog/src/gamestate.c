@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  * ServerLog handler library.
  *
  * Licensed under MIT open-source license.

@@ -1,5 +1,5 @@
 /* Minecraft Protocol Proxy (mcproxy)
- * Copyright (c) 2011 Michał Siejak
+ * Copyright (c) 2011 Michał Siejak, Dylan Lukes
  *
  * Licensed under MIT open-source license.
  * See COPYING file for details.
@@ -44,22 +44,22 @@ typedef struct objlist_s objlist_t;
 void proto_object_init(object_t* object, unsigned char type);
 unsigned char proto_typeof(objlist_t* list, size_t index);
 
-inline char proto_getc(objlist_t* list, size_t index);
-inline void proto_putc(objlist_t* list, size_t index, char value);
-inline short proto_gets(objlist_t* list, size_t index);
-inline void proto_puts(objlist_t* list, size_t index, short value);
-inline int32_t proto_geti(objlist_t* list, size_t index);
-inline void proto_puti(objlist_t* list, size_t index, int32_t value);
-inline int64_t proto_getl(objlist_t* list, size_t index);
-inline void proto_putl(objlist_t* list, size_t index, int64_t value);
-inline float proto_getf(objlist_t* list, size_t index);
-inline void proto_putf(objlist_t* list, size_t index, float value);
-inline double proto_getd(objlist_t* list, size_t index);
-inline void proto_putd(objlist_t* list, size_t index, double value);
-size_t proto_getstr(objlist_t* list, size_t index, char* buffer, size_t maxsize);
-void proto_putstr(objlist_t* list, size_t index, const char *value);
-size_t proto_getustr(objlist_t* list, size_t index, char* buffer, size_t maxsize);
-void proto_putustr(objlist_t* list, size_t index, const char *value);
+char    proto_getc(objlist_t* list, size_t index);
+void    proto_putc(objlist_t* list, size_t index, char value);
+short   proto_gets(objlist_t* list, size_t index);
+void    proto_puts(objlist_t* list, size_t index, short value);
+int32_t proto_geti(objlist_t* list, size_t index);
+void    proto_puti(objlist_t* list, size_t index, int32_t value);
+int64_t proto_getl(objlist_t* list, size_t index);
+void    proto_putl(objlist_t* list, size_t index, int64_t value);
+float   proto_getf(objlist_t* list, size_t index);
+void    proto_putf(objlist_t* list, size_t index, float value);
+double  proto_getd(objlist_t* list, size_t index);
+void    proto_putd(objlist_t* list, size_t index, double value);
+size_t  proto_getstr(objlist_t* list, size_t index, char* buffer, size_t maxsize);
+void    proto_putstr(objlist_t* list, size_t index, const char *value);
+size_t  proto_getustr(objlist_t* list, size_t index, char* buffer, size_t maxsize);
+void    proto_putustr(objlist_t* list, size_t index, const char *value);
 
 int proto_send(nethost_t* host, const objlist_t* list, unsigned long flags);
 objlist_t* proto_recv(nethost_t* host, const char* format);
