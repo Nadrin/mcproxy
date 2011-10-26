@@ -34,6 +34,7 @@ add_definitions("-D_POSIX_SOURCE
 # OS X Compatibility
 if(DEFINED APPLE)
   message(STATUS "Compiling in OS X compatibility mode - yes")
+  add_definitions("-D_DARWIN_C_SOURCE") # Enable Darwin extensions to the POSIX specification. MAP_ANON is not POSIX.
   set(OSX_SPECIFIC_LIBS iconv)
   set(MCPROXY_USE_CLANG ON)
   set(MCPROXY_USE_NAMED_SEMAPHORES ON)
