@@ -10,7 +10,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 # Project Options
-option(MCPROXY_USE_CLANG "Compile using clang, if it is available" ON)
+option(MCPROXY_USE_CLANG "Compile using clang, if it is available" OFF)
 option(MCPROXY_USE_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
 option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
 option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
@@ -35,6 +35,7 @@ add_definitions("-D_POSIX_SOURCE
 message(STATUS "Compiling in OS X compatibility mode - ${APPLE}")
 if(DEFINED APPLE)
   set(OSX_SPECIFIC_LIBS iconv)
+  set(MCPROXY_USE_CLANG ON)
   set(MCPROXY_USE_NAMED_SEMAPHORES ON)
 endif()
 
