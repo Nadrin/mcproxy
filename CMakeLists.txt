@@ -24,10 +24,8 @@ add_definitions("-Werror -Wall -Wextra
                  -std=c99 -fstrict-aliasing -pedantic")
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-# POSIX/BSD Feature Macros
-add_definitions("-D_POSIX_SOURCE 
-                 -D_POSIX_C_SOURCE=200112L 
-                 -D_BSD_SOURCE")
+# Require SUSv3 (POSIX.2001 + XSI)
+add_definitions("-D_XOPEN_SOURCE=600")
 
 # OS X Compatibility
 if(DEFINED APPLE)
