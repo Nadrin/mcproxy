@@ -10,8 +10,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 # Project Options
-option(MCPROXY_USE_CLANG "Compile using clang, if it is available" OFF)
-option(MCPROXY_USE_NAMED_SEMAPHORES "Use named semaphores regardless of platform" OFF)
 option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
 option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
 set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-modular mode")
@@ -20,40 +18,21 @@ set(MCPROXY_EMBEDDED_HANDLER "" CACHE STRING "Embedded handler library for non-m
 add_definitions("-Werror -Wall -Wextra 
                  -Wpointer-arith 
                  -Wcast-qual 
-                 -Wstrict-prototypes 
+                 -Wstrict-prototypes
                  -Wmissing-prototypes 
                  -Wno-unused-parameter 
                  -std=c99 -fstrict-aliasing -pedantic")
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-# Feature macros
-add_definitions("-D_POSIX_SOURCE 
-                 -D_POSIX_C_SOURCE=200112L 
-                 -D_BSD_SOURCE")
+# Require SUSv3 (POSIX.2001 + XSI)
+add_definitions("-D_XOPEN_SOURCE=600")
 
 # OS X Compatibility
 if(DEFINED APPLE)
   message(STATUS "Compiling in OS X compatibility mode - yes")
   set(OSX_SPECIFIC_LIBS iconv)
-  set(MCPROXY_USE_CLANG ON)
-  set(MCPROXY_USE_NAMED_SEMAPHORES ON)
 else()
   message(STATUS "Compiling in OS X compatibility mode - no")
-endif()
-
-##Options
-if(MCPROXY_USE_CLANG)
-  message(STATUS "Compiling using clang - yes")
-  set(CMAKE_C_COMPILER clang)
-else()
-  message(STATUS "Compiling using clang - no")
-endif()
-
-if(MCPROXY_USE_NAMED_SEMAPHORES)
-  message(STATUS "Using named semaphores - yes")
-  add_definitions(-DMCPROXY_USE_NAMED_SEMAPHORES)
-else()
-  message(STATUS "Using named semaphores - no")
 endif()
 
 # If a handler is being embedded, the handlers must be compiled as static libraries.
