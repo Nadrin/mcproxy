@@ -9,6 +9,9 @@ set(${PROJECT_NAME}_MINOR_VERSION 3)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+# Find pkg-config
+find_package(PkgConfig)
+
 # Project Options
 option(MCPROXY_HANDLERS_STATIC "Compile handlers as static libraries" OFF)
 option(MCPROXY_LIBAPI_STATIC "Compile libproxyapi as a static library" OFF)
@@ -26,6 +29,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Require SUSv3 (POSIX.2001 + XSI)
 add_definitions("-D_XOPEN_SOURCE=600")
+add_definitions("-D_BSD_SOURCE")
 
 # OS X Compatibility
 if(DEFINED APPLE)
