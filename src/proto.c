@@ -8,10 +8,12 @@
 #include <stdio.h>
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
 
 #include <config.h>
+#include <endian.h>
 #include <proto.h>
 #include <util.h>
 #include <mm.h>
@@ -35,50 +37,50 @@ unsigned char proto_typeof(objlist_t* list, size_t index)
   return list->objects[index].type;
 }
 
-inline char proto_getc(objlist_t* list, size_t index)
+inline int8_t proto_getc(objlist_t* list, size_t index)
 { 
-  return *(char*)list->objects[index].data;
+  return *(int8_t*)list->objects[index].data;
 }
 
-inline void proto_putc(objlist_t* list, size_t index, char value)
+inline void proto_putc(objlist_t* list, size_t index, int8_t value)
 { 
   (*(char*)list->objects[index].data) = value;
 }
 
-inline short proto_gets(objlist_t* list, size_t index)
+inline int16_t proto_gets(objlist_t* list, size_t index)
 { 
-  return be16toh(*(short*)list->objects[index].data);
+  return mcp_ntohs(*(int16_t*)list->objects[index].data);
 }
 
-inline void proto_puts(objlist_t* list, size_t index, short value)
+inline void proto_puts(objlist_t* list, size_t index, int16_t value)
 {
-  (*(short*)list->objects[index].data) = htobe16(value);
+  (*(short*)list->objects[index].data) = mcp_htons(value);
 }
 
 inline int32_t proto_geti(objlist_t* list, size_t index)
 {
-  return be32toh(*(int32_t*)list->objects[index].data);
+  return mcp_ntohl(*(int32_t*)list->objects[index].data);
 }
 
 inline void proto_puti(objlist_t* list, size_t index, int32_t value)
 {
-  (*(int32_t*)list->objects[index].data) = htobe32(value);
+  (*(int32_t*)list->objects[index].data) = mcp_htons(value);
 }
 
 inline int64_t proto_getl(objlist_t* list, size_t index)
 {
-  return be64toh(*(int64_t*)list->objects[index].data);
+  return mcp_ntohq(*(int64_t*)list->objects[index].data);
 }
 
 inline void proto_putl(objlist_t* list, size_t index, int64_t value)
 {
-  (*(int64_t*)list->objects[index].data) = htobe64(value);
+  (*(int64_t*)list->objects[index].data) = mcp_htonq(value);
 }
 
 inline float proto_getf(objlist_t* list, size_t index)
 {
   union _float32_conv conv;
-  conv.ivalue = be32toh(*(uint32_t*)list->objects[index].data);
+  conv.ivalue = mcp_ntohl(*(uint32_t*)list->objects[index].data);
   return conv.fvalue;
 }
 
@@ -86,13 +88,13 @@ inline void proto_putf(objlist_t* list, size_t index, float value)
 {
   union _float32_conv conv;
   conv.fvalue = value;
-  *((uint32_t*)list->objects[index].data) = htobe32(conv.ivalue);
+  *((uint32_t*)list->objects[index].data) = mcp_htonl(conv.ivalue);
 }
 
 inline double proto_getd(objlist_t* list, size_t index)
 {
   union _float64_conv conv;
-  conv.ivalue = be64toh(*(uint64_t*)list->objects[index].data);
+  conv.ivalue = mcp_ntohq(*(uint64_t*)list->objects[index].data);
   return conv.fvalue;
 }
 
@@ -100,7 +102,7 @@ inline void proto_putd(objlist_t* list, size_t index, double value)
 {
   union _float64_conv conv;
   conv.fvalue = value;
-  *((uint64_t*)list->objects[index].data) = htobe64(conv.ivalue);
+  *((uint64_t*)list->objects[index].data) = mcp_htonq(conv.ivalue);
 }
 
 size_t proto_getstr(objlist_t* list, size_t index, char* buffer, size_t maxsize)

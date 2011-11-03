@@ -72,7 +72,7 @@ endif()
 # =========== # 
 
 ## libmcproxyapi
-add_library(mcproxyapi ${PROXYAPI_MODE} src/system.c src/network.c src/proto.c src/msgtable.c src/proxy.c src/util.c src/mm.c src/thread.c src/log.c)
+add_library(mcproxyapi ${PROXYAPI_MODE} src/system.c src/endian.c src/network.c src/proto.c src/msgtable.c src/proxy.c src/util.c src/mm.c src/thread.c src/log.c)
 target_link_libraries(mcproxyapi dl m pthread ${OSX_SPECIFIC_LIBS})
 
 # ======== #

@@ -44,10 +44,10 @@ typedef struct objlist_s objlist_t;
 void proto_object_init(object_t* object, unsigned char type);
 unsigned char proto_typeof(objlist_t* list, size_t index);
 
-char    proto_getc(objlist_t* list, size_t index);
-void    proto_putc(objlist_t* list, size_t index, char value);
-short   proto_gets(objlist_t* list, size_t index);
-void    proto_puts(objlist_t* list, size_t index, short value);
+int8_t  proto_getc(objlist_t* list, size_t index);
+void    proto_putc(objlist_t* list, size_t index, int8_t value);
+int16_t proto_gets(objlist_t* list, size_t index);
+void    proto_puts(objlist_t* list, size_t index, int16_t value);
 int32_t proto_geti(objlist_t* list, size_t index);
 void    proto_puti(objlist_t* list, size_t index, int32_t value);
 int64_t proto_getl(objlist_t* list, size_t index);
