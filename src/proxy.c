@@ -20,28 +20,6 @@
 extern msgdesc_t msgtable[];
 extern short eidtable[];
 
-#if 0 // UNUSED
-static int
-helper_generic_item(cid_t client_id, char mode, unsigned char msg_id,
-                    nethost_t* host, objlist_t* data, void* extra)
-{
-  int base_index = 4 + (msg_id == 0x66);
-
-  if(proto_gets(data, base_index) < 0)
-    return PROXY_OK;
-
-  if(mode == MODE_RECV) {
-    if(proto_recv_object(host, &data->objects[base_index+1], 'c') != 0) return 1;
-    if(proto_recv_object(host, &data->objects[base_index+2], 's') != 0) return 1;
-  }
-  else {
-    if(proto_send_object(host, &data->objects[base_index+1]) != 0) return 1;
-    if(proto_send_object(host, &data->objects[base_index+2]) != 0) return 1;
-  }
-  return PROXY_OK;
-}
-#endif
-
 static int
 helper_add_object(cid_t client_id, char mode, unsigned char msg_id,
                   nethost_t* host, objlist_t* data, void* extra)
@@ -61,28 +39,6 @@ helper_add_object(cid_t client_id, char mode, unsigned char msg_id,
   }
   return PROXY_OK;
 }
-
-#if 0 // UNUSED
-
-static int
-helper_set_slot(cid_t client_id, char mode, unsigned char msg_id,
-                nethost_t* host, objlist_t* data, void* extra)
-{
-  if(proto_gets(data, 2) < 0)
-    return PROXY_OK;
-
-  if(mode == MODE_RECV) {
-    if(proto_recv_object(host, &data->objects[3], 'c') != 0) return 1;
-    if(proto_recv_object(host, &data->objects[4], 's') != 0) return 1;
-  }
-  else {
-    if(proto_send_object(host, &data->objects[3]) != 0) return 1;
-    if(proto_send_object(host, &data->objects[4]) != 0) return 1;
-  }
-  return PROXY_OK;
-}
-
-#endif
 
 static int
 helper_map_chunk(cid_t client_id, char mode, unsigned char msg_id,
@@ -116,47 +72,6 @@ helper_explosion(cid_t client_id, char mode, unsigned char msg_id,
   if(datasize == 0) return PROXY_OK;
   return proxy_transfer(mode, host, data, datasize);
 }
-
-
-#if 0 // UNUSED
-
-static int
-helper_window_items(cid_t client_id, char mode, unsigned char msg_id,
-                    nethost_t* host, objlist_t* data, void* extra)
-{
-  short i;
-  short count = proto_gets(data, 1);
-  size_t datasize;
-  
-  if(mode == MODE_RECV) {
-    size_t maxsize = count * 5;
-    char*  listptr = NULL;
-
-    data->dataptr = pool_malloc(NULL, maxsize + sizeof(size_t));
-    listptr = ((char*)data->dataptr) + sizeof(size_t);
-    
-    for(i=0; i<count; i++) {
-      short itemid;
-      if(net_recv(host->s, listptr, 2) != NETOK) return 1;
-      itemid = ntohs(*(short*)listptr);
-      listptr += 2;
-      if(itemid != -1) {
-        if(net_recv(host->s, listptr, 3) != NETOK) return 1;
-        listptr += 3;
-      }
-    }
-    (*(size_t*)data->dataptr) = listptr - (char*)data->dataptr - sizeof(size_t);
-  }
-  else {
-    datasize = *(size_t*)data->dataptr;
-    if(net_send(host->s, ((char*)data->dataptr) + sizeof(size_t), datasize) != NETOK)
-      return PROXY_ERROR;
-  }
-  
-  return PROXY_OK;
-}
-
-#endif
 
 static int
 helper_map_data(cid_t client_id, char mode, unsigned char msg_id,

@@ -154,6 +154,7 @@ void proto_putustr(objlist_t* list, size_t index, const char *value)
 
 void proto_getslot(objlist_t* list, size_t index, slot_t* value)
 {
+  short s_datasize;
   value->id = proto_gets(list, index);
   if(value->id != -1) {
     value->count    = proto_getc(list, index+1);
@@ -161,8 +162,11 @@ void proto_getslot(objlist_t* list, size_t index, slot_t* value)
 
     if(proto_typeof(list, index+3) == TYPE_INVALID)
       value->datasize = 0;
-    else
-      value->datasize = (size_t)proto_gets(list, index+3);
+    else {
+      s_datasize = proto_gets(list, index+3);
+      if(s_datasize < 0) s_datasize = 0;
+      value->datasize = (size_t)s_datasize;
+    }
   }
   else {
     value->count    = 0;
