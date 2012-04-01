@@ -16,6 +16,8 @@
 #include <util.h>
 #include <mm.h>
 
+extern short eidtable[];
+
 // Floating point <-> integer conversion unions
 union _float32_conv
 {
@@ -150,6 +152,39 @@ void proto_putustr(objlist_t* list, size_t index, const char *value)
   list->objects[index].size = len + 2;
 }
 
+void proto_getslot(objlist_t* list, size_t index, slot_t* value)
+{
+  value->id = proto_gets(list, index);
+  if(value->id != -1) {
+    value->count    = proto_getc(list, index+1);
+    value->meta     = proto_gets(list, index+2);
+
+    if(proto_typeof(list, index+3) == TYPE_INVALID)
+      value->datasize = 0;
+    else
+      value->datasize = (size_t)proto_gets(list, index+3);
+  }
+  else {
+    value->count    = 0;
+    value->meta     = 0;
+    value->datasize = 0;
+  }
+}
+
+void proto_putslot(objlist_t* list, size_t index, const slot_t* value)
+{
+  short s_datasize;
+  proto_puts(list, index, value->id);
+  if(value->id != -1) {
+    s_datasize = (short)value->datasize;
+    if(s_datasize == 0) s_datasize = -1;
+
+    proto_putc(list, index+1, value->count);
+    proto_puts(list, index+2, value->meta);
+    proto_puts(list, index+2, s_datasize);
+  }
+}
+
 int proto_send_meta(nethost_t* host, const object_t* curobj)
 {
   objlist_t* metalist = (objlist_t*)curobj->data;
@@ -214,6 +249,46 @@ int proto_recv_meta(nethost_t* host, object_t* curobj)
   return 0;
 }
 
+int proto_recv_slot(nethost_t* host, size_t index, objlist_t* data)
+{
+  short item_id, *eid;
+  size_t i, offset = 1;
+  
+  if(proto_recv_object(host, &data->objects[index], 's') != 0)
+    return 1;
+  item_id = proto_gets(data, index);
+  if(item_id != -1) {
+    offset = 3;
+    if(proto_recv_object(host, &data->objects[index+1], 'c') != 0)
+      return 1;
+    if(proto_recv_object(host, &data->objects[index+2], 's') != 0)
+      return 1;
+    
+    eid = eidtable;
+    while((*eid) != 0 && (*eid) != item_id)
+      eid++;
+    if((*eid) == item_id) {
+      offset = 4;
+      if(proto_recv_object(host, &data->objects[index+3], 's') != 0)
+        return 1;
+    }
+  }
+
+  for(i=offset; i<4; i++)
+    proto_object_init(&data->objects[index+i], TYPE_INVALID);
+  return 0;
+}
+
+int proto_send_slot(nethost_t* host, size_t index, objlist_t* data)
+{
+  size_t i;
+  for(i=0; i<4; i++) {
+    if(proto_send_object(host, &data->objects[index+i]) != 0)
+      return 1;
+  }
+  return 0;
+}
+
 void proto_object_init(object_t* object, unsigned char type)
 {
   static size_t _sizes[] = { 0, 1, 2, 4, 8, 4, 8, 0, 0, 0, 0 };
@@ -225,6 +300,8 @@ void proto_object_init(object_t* object, unsigned char type)
   object->type = type;
   if(object->size > 0)
     object->data = pool_malloc(NULL, object->size);
+  else
+    object->data = NULL;
 }
 
 int proto_recv_object(nethost_t* host, object_t* curobj, const char format)

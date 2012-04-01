@@ -41,6 +41,14 @@ struct objlist_s {
 };
 typedef struct objlist_s objlist_t;
 
+struct slot_s {
+  short id;
+  unsigned char count;
+  short meta;
+  size_t datasize;
+};
+typedef struct slot_s slot_t;
+
 void proto_object_init(object_t* object, unsigned char type);
 unsigned char proto_typeof(objlist_t* list, size_t index);
 
@@ -60,6 +68,8 @@ size_t  proto_getstr(objlist_t* list, size_t index, char* buffer, size_t maxsize
 void    proto_putstr(objlist_t* list, size_t index, const char *value);
 size_t  proto_getustr(objlist_t* list, size_t index, char* buffer, size_t maxsize);
 void    proto_putustr(objlist_t* list, size_t index, const char *value);
+void    proto_getslot(objlist_t* list, size_t index, slot_t* value);
+void    proto_putslot(objlist_t* list, size_t index, const slot_t* value);
 
 int proto_send(nethost_t* host, const objlist_t* list, unsigned long flags);
 objlist_t* proto_recv(nethost_t* host, const char* format);
@@ -70,6 +80,7 @@ int proto_send_meta(nethost_t* host, const object_t* curobj);
 int proto_recv_object(nethost_t* host, object_t* curobj, const char format);
 int proto_recv_meta(nethost_t* host, object_t* curobj);
 
-
+int proto_recv_slot(nethost_t* host, size_t index, objlist_t* data);
+int proto_send_slot(nethost_t* host, size_t index, objlist_t* data);
 
 #endif

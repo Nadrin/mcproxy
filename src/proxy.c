@@ -18,7 +18,9 @@
 #include <util.h>
 
 extern msgdesc_t msgtable[];
+extern short eidtable[];
 
+#if 0 // UNUSED
 static int
 helper_generic_item(cid_t client_id, char mode, unsigned char msg_id,
                     nethost_t* host, objlist_t* data, void* extra)
@@ -38,6 +40,7 @@ helper_generic_item(cid_t client_id, char mode, unsigned char msg_id,
   }
   return PROXY_OK;
 }
+#endif
 
 static int
 helper_add_object(cid_t client_id, char mode, unsigned char msg_id,
@@ -59,6 +62,8 @@ helper_add_object(cid_t client_id, char mode, unsigned char msg_id,
   return PROXY_OK;
 }
 
+#if 0 // UNUSED
+
 static int
 helper_set_slot(cid_t client_id, char mode, unsigned char msg_id,
                 nethost_t* host, objlist_t* data, void* extra)
@@ -77,11 +82,13 @@ helper_set_slot(cid_t client_id, char mode, unsigned char msg_id,
   return PROXY_OK;
 }
 
+#endif
+
 static int
 helper_map_chunk(cid_t client_id, char mode, unsigned char msg_id,
                  nethost_t* host, objlist_t* data, void* extra)
 {
-  size_t datasize = proto_geti(data, 6);
+  size_t datasize = proto_geti(data, 5);
   return proxy_transfer(mode, host, data, datasize);
 }
 
@@ -89,8 +96,15 @@ static int
 helper_multiblock_change(cid_t client_id, char mode, unsigned char msg_id,
                          nethost_t* host, objlist_t* data, void* extra)
 {
-  short count = proto_gets(data, 2);
-  size_t datasize = count * 4;
+  size_t datasize = proto_geti(data, 3);
+  return proxy_transfer(mode, host, data, datasize);
+}
+
+static int
+helper_plugin_message(cid_t client_id, char mode, unsigned char msg_id,
+                      nethost_t* host, objlist_t* data, void* extra)
+{
+  size_t datasize = proto_gets(data, 1);
   return proxy_transfer(mode, host, data, datasize);
 }
 
@@ -102,6 +116,9 @@ helper_explosion(cid_t client_id, char mode, unsigned char msg_id,
   if(datasize == 0) return PROXY_OK;
   return proxy_transfer(mode, host, data, datasize);
 }
+
+
+#if 0 // UNUSED
 
 static int
 helper_window_items(cid_t client_id, char mode, unsigned char msg_id,
@@ -139,6 +156,8 @@ helper_window_items(cid_t client_id, char mode, unsigned char msg_id,
   return PROXY_OK;
 }
 
+#endif
+
 static int
 helper_map_data(cid_t client_id, char mode, unsigned char msg_id,
                 nethost_t* host, objlist_t* data, void* extra)
@@ -146,6 +165,82 @@ helper_map_data(cid_t client_id, char mode, unsigned char msg_id,
   size_t datasize = (unsigned char)proto_getc(data, 2);
   if(datasize == 0) return PROXY_OK;
   return proxy_transfer(mode, host, data, datasize);
+}
+
+static int
+helper_slot(cid_t client_id, char mode, unsigned char msg_id,
+            nethost_t* host, objlist_t* data, void* extra)
+{
+  objlist_t* slot;
+  slot_t slotdata;
+  
+  size_t index = (size_t)extra;
+
+  if(mode == MODE_RECV) {
+    slot = pool_malloc(NULL, sizeof(objlist_t));
+    
+    slot->objects = pool_malloc(NULL, 4 * sizeof(object_t));
+    slot->count   = 4;
+    
+    if(proto_recv_slot(host, 0, slot) != 0)
+      return PROXY_ERROR;
+    data->objects[index].data = (void*)slot;
+  }
+  else {
+    slot = (objlist_t*)data->objects[index].data;
+    if(proto_send_slot(host, 0, slot) != 0)
+      return PROXY_ERROR;
+  }
+
+  proto_getslot(slot, 0, &slotdata);
+  if(slotdata.datasize > 0)
+    return proxy_transfer(mode, host, data, slotdata.datasize);
+  return PROXY_OK;
+}
+
+static int
+helper_slot_array(cid_t client_id, char mode, unsigned char msg_id,
+                  nethost_t* host, objlist_t* data, void* extra)
+{
+  objlist_t *array;
+  slot_t slotdata;
+  int errcode;
+  
+  size_t i, index = (size_t)extra;
+  size_t count    = (size_t)proto_gets(data, index-1);
+
+  if(mode == MODE_RECV) {
+    array = pool_malloc(NULL, count * sizeof(objlist_t));
+    for(i=0; i<count; i++) {
+      array[i].objects = pool_malloc(NULL, 4 * sizeof(object_t));
+      array[i].count   = 4;
+
+      if(proto_recv_slot(host, 0, &array[i]) != 0)
+        return PROXY_ERROR;
+
+      proto_getslot(&array[i], 0, &slotdata);
+      if(slotdata.datasize > 0) {
+        errcode = proxy_transfer(mode, host, &array[i], slotdata.datasize);
+        if(errcode != PROXY_OK) return errcode;
+      }
+    }
+    data->objects[index].data = (void*)array;
+  }
+  else {
+    array = (objlist_t*)data->objects[index].data;
+    for(i=0; i<count; i++) {
+      if(proto_send_slot(host, 0, &array[i]) != 0)
+        return PROXY_ERROR;
+
+      proto_getslot(&array[i], 0, &slotdata);
+      if(slotdata.datasize > 0) {
+        errcode = proxy_transfer(mode, host, &array[i], slotdata.datasize);
+        if(errcode != PROXY_OK) return errcode;
+      }
+    }
+  }
+
+  return PROXY_OK;
 }
 
 int
@@ -240,15 +335,25 @@ msgdesc_t* proxy_init(void)
   }
 
   // Internal helpers
-  msglookup[0x0F].datahelper = helper_generic_item;
   msglookup[0x17].datahelper = helper_add_object;
   msglookup[0x33].datahelper = helper_map_chunk;
   msglookup[0x34].datahelper = helper_multiblock_change;
   msglookup[0x3C].datahelper = helper_explosion;
-  msglookup[0x66].datahelper = helper_generic_item;
-  msglookup[0x67].datahelper = helper_set_slot;
-  msglookup[0x68].datahelper = helper_window_items;
+
+  msglookup[0x0F].datahelper = helper_slot;
+  msglookup[0x0F].datahelper_extra = (void*)4;
+  msglookup[0x66].datahelper = helper_slot;
+  msglookup[0x66].datahelper_extra = (void*)5;
+  msglookup[0x67].datahelper = helper_slot;
+  msglookup[0x67].datahelper_extra = (void*)2;
+  msglookup[0x6B].datahelper = helper_slot;
+  msglookup[0x6B].datahelper_extra = (void*)1;
+  
+  msglookup[0x68].datahelper = helper_slot_array;
+  msglookup[0x68].datahelper_extra = (void*)2;
+  
   msglookup[0x83].datahelper = helper_map_data;
+  msglookup[0xFA].datahelper = helper_plugin_message;
   return msglookup;
 }
 

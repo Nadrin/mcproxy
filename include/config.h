@@ -36,5 +36,6 @@
 
 // Some built-in types
 typedef unsigned long cid_t;
+typedef unsigned char bool;
 
 #endif

@@ -281,7 +281,7 @@ int core_main(sys_config_t* system_config, handler_api_t* handler_api)
   CORE_MODE(MCP_MODE_SERVER | MCP_MODE_PROXY) {
     listen_sockfd = net_listen(system_config->listen_port, NULL);
     if(listen_sockfd <= 0) {
-      log_print(NULL, "Cannot bind to port %d! Aborting.", system_config->listen_port);
+      log_print(NULL, "Cannot bind to port %s! Aborting.", system_config->listen_port);
       return EXIT_FAILURE;
     }
     log_print(NULL, "Listening on port %s", system_config->listen_port);
