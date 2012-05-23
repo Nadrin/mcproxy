@@ -85,7 +85,7 @@ int login_handler_loginrequest(cid_t client_id, char direction, unsigned char ms
 
       gs_set_player((player_t*)found->data);
       gs_get_player()->entity_id = proto_geti(data, 0);
-      gs_get_player()->dim       = abs(proto_getc(data, 4));
+      gs_get_player()->dim       = proto_geti(data, 4) + GS_DIM_OFFSET;
     }
     thread_mutex_unlock(NULL);
 

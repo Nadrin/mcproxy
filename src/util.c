@@ -130,8 +130,8 @@ util_iconv_generic(iconv_t context, char* dest, const size_t destsize,
   char *_src, *_dest;  
   union {const char *cc; char *c;} const_cast;
   
-  const_cast.cc = src; _src  = const_cast.c;
-  const_cast.cc = src; _dest = const_cast.c;
+  const_cast.cc = src;  _src  = const_cast.c;
+  const_cast.cc = dest; _dest = const_cast.c;
   size_t src_bytes = srcsize;
   size_t dst_bytes = destsize;
   

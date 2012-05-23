@@ -102,14 +102,14 @@ helper_slot(cid_t client_id, char mode, unsigned char msg_id,
     data->objects[index].data = (void*)slot;
   }
   else {
-    slot = (objlist_t*)data->objects[index].data;
+    slot = proto_list(data, index);
     if(proto_send_slot(host, 0, slot) != 0)
       return PROXY_ERROR;
   }
 
   proto_getslot(slot, 0, &slotdata);
   if(slotdata.datasize > 0)
-    return proxy_transfer(mode, host, data, slotdata.datasize);
+    return proxy_transfer(mode, host, slot, slotdata.datasize);
   return PROXY_OK;
 }
 
@@ -142,7 +142,7 @@ helper_slot_array(cid_t client_id, char mode, unsigned char msg_id,
     data->objects[index].data = (void*)array;
   }
   else {
-    array = (objlist_t*)data->objects[index].data;
+    array = proto_list(data, index);
     for(i=0; i<count; i++) {
       if(proto_send_slot(host, 0, &array[i]) != 0)
         return PROXY_ERROR;

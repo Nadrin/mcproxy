@@ -26,16 +26,16 @@ inventory_validate(short slot_id, short item_id, unsigned char window)
   case GS_WINDOW_INVENTORY:
     if(slot_id == -9)
       return 0;
-    for(j=0; j<4; j++) {
+    for(j=0; j<4; j++) { // Armor slots in inventory
       if(slot_id == 36 + j) {
-	for(i=0; i<5; i++) if(item_id == 298 + j + i*4) return 1;
-	if(j==0) if(item_id == 86) return 1;
+	for(i=0; i<5; i++) if(item_id == 298 + j + i*4) return 1; // Armor parts
+	if(j==0) if(item_id == 86) return 1; // Pumpkin
 	return 0;
       }
     }
     break;
   case GS_WINDOW_WORKBENCH:
-    if(slot_id == -10)
+    if(slot_id == -10) // Cannot place anything in output slot
       return 0;
     break;
   }
@@ -53,6 +53,9 @@ inventory_get_invslot(short i, short offset, unsigned char window)
   return slot_id;
 }
 
+// WORK IN PROGRESS
+
+#if 0
 static void
 inventory_reportchange(cid_t client_id, inventory_handler_config_t* config,
 		       short id, short count, unsigned char type)
@@ -61,7 +64,9 @@ inventory_reportchange(cid_t client_id, inventory_handler_config_t* config,
   const char* item = inventory_get_watch(config, id);
 
   char* type_name  = "Chest";
-  if(type == GS_WINDOW_INVENTORY || type == GS_WINDOW_WORKBENCH)
+  if(type == GS_WINDOW_INVENTORY ||
+     type == GS_WINDOW_WORKBENCH ||
+     type == GS_WINDOW_ENCHANT)
     return;
   
   if(type == GS_WINDOW_FURNANCE)
@@ -76,112 +81,72 @@ inventory_reportchange(cid_t client_id, inventory_handler_config_t* config,
 	      player->position[0], player->position[1], player->position[2]);
   }
 }
+#endif
 
-static int 
+static void
+inventory_autoplace(player_t* player, short item_id, short count)
+{
+  
+}
+
+static int
 inventory_transact_windowclick(cid_t client_id,
-			       nethost_t* client, nethost_t* server, void *extra)
+                               nethost_t* client, nethost_t* server, void* extra)
 {
   inventory_clickdata_t* click_data = (inventory_clickdata_t*)extra;
   player_t* player = gs_get_player();
+  slot_t* s = &click_data->slotdata;
+  
   short slot_id = -1;
-  short save_count = 0;
+  //short save_count = 0;
 
-  // Notch, I hate you for this. :<
-  if(click_data->window == 0)
+  if(click_data->window == GS_WINDOW_INVENTORY)
     player->invoffset = GS_SLOT_OFFSET;
 
   if(click_data->slot >= 0)
     slot_id = inventory_get_invslot(click_data->slot, player->invoffset, click_data->window);
-  
-  if(player->mouse.id == -1) {
-    if(click_data->slot < 0 || click_data->item_id == -1)
+
+  if(player->mouse.id == -1) { // Hand is empty
+    if(click_data->slot < 0 || s->id == -1) // Clicked outside of window or at empty slot.
       return PROXY_OK;
 
-    player->mouse.id = click_data->item_id;
-    player->mouse.uses = click_data->item_uses;
-
-    if(click_data->right) {
-      player->mouse.count = ceilf(click_data->item_count / 2.0f);
-      if(slot_id >= 0)
-	player->slots[slot_id].count -= player->mouse.count;
+    if(click_data->flags & INV_FLAG_SHIFT) { // Holding shift
+      if(slot_id >= 0) // Clicked inside player's inventory
+        player->slots[slot_id].count = 0; // Item removed from slot
       else
-	player->mouse_origin = click_data->window;
+        inventory_autoplace(player, s->id, s->count); // Autoplace item in quickbar
     }
     else {
-      player->mouse.count = click_data->item_count;
-      if(slot_id >= 0)
-	player->slots[slot_id].count = 0;
+      player->mouse.id = s->id;
+      player->mouse.uses = s->meta;
+    
+      if(click_data->flags & INV_FLAG_RIGHT) // Clicked with right mouse button
+        player->mouse.count = ceilf(s->count * 0.5f);
+      else // Clicked with left mouse button
+        player->mouse.count = s->count;
+
+      if(slot_id >= 0) // Clicked inside player's inventory
+        player->slots[slot_id].count -= player->mouse.count; // Remove items from inventory
       else
-	player->mouse_origin = click_data->window;
+        player->mouse_origin = click_data->window;
     }
   }
-  else {
-    save_count = player->mouse.count;
-    if(click_data->slot < 0) {
-      if(click_data->right)
-	player->mouse.count--;
+  else { // Hand is holding an item
+    if(click_data->slot < 0) { // Clicked outside the window
+      if(click_data->flags & INV_FLAG_RIGHT) // Clicked with right mouse button
+        player->mouse.count--;
       else
-	player->mouse.count = 0;
-      slot_id = 0;
+        player->mouse.count = 0;
     }
-    else {
-      if(inventory_validate(slot_id, player->mouse.id, player->window) == 0)
-	return PROXY_OK;
+    else { // Clicked inside the window
+      if(click_data->flags & INV_FLAG_SHIFT) // Holding shift
+        return PROXY_OK;
+      if(!inventory_validate(slot_id, player->mouse.id, player->window)) // Player selected invalid slot
+        return PROXY_OK;
 
-      if(slot_id >= 0) {
-	player->slots[slot_id].id = player->mouse.id;
-	player->slots[slot_id].uses = player->mouse.uses;
-      }
-      if(click_data->item_id == player->mouse.id) {
-	if(click_data->right) {
-	  if(slot_id >= 0)
-	    player->slots[slot_id].count++;
-	  player->mouse.count--;
-	}
-	else {
-	  if(slot_id >= 0)
-	    player->slots[slot_id].count += player->mouse.count;
-	  player->mouse.count = 0;
-	}
-      }
-      else {
-	if(click_data->item_id == -1) {
-	  if(click_data->right) {
-	    if(slot_id >= 0)
-	      player->slots[slot_id].count = 1;
-	    player->mouse.count--;
-	  }
-	  else {
-	    if(slot_id >= 0)
-	      player->slots[slot_id].count = player->mouse.count;
-	    player->mouse.count = 0;
-	  }
-	}
-	else {
-	  if(slot_id >= 0)
-	    player->slots[slot_id].count = player->mouse.count;
-	  player->mouse.id    = click_data->item_id;
-	  player->mouse.count = click_data->item_count;
-	  player->mouse.uses  = click_data->item_uses;
-	}
-      }
+      
     }
   }
-
-  if(slot_id >= 0 && player->mouse_origin != GS_WINDOW_INVENTORY)
-    inventory_reportchange(client_id, click_data->config,
-			   player->mouse.id, save_count, player->window);
- 
-  if(player->mouse.count == 0) {
-    player->mouse.id = -1;
-    player->mouse.uses = 0;
-    player->mouse_origin = GS_WINDOW_INVENTORY;
-  }
-  if(slot_id >= 0 && player->slots[slot_id].count == 0) {
-    player->slots[slot_id].id = -1;
-    player->slots[slot_id].uses = 0;
-  }
-
   return PROXY_OK;
 }
 
@@ -217,8 +182,8 @@ int inventory_handler_main(cid_t client_id, char direction, unsigned char msg_id
 			   nethost_t* hfrom, nethost_t* hto, objlist_t* data,
 			   void* extra)
 {
-  short item_id;
   short slot_id;
+  slot_t slotdata;
 
   transaction_t click_transact;
   inventory_clickdata_t* click_data;
@@ -233,8 +198,11 @@ int inventory_handler_main(cid_t client_id, char direction, unsigned char msg_id
       break;
     player->window = proto_getc(data, 1) + 1;
     player->invoffset = proto_getc(data, 3);
+    
     if(player->window == GS_WINDOW_WORKBENCH)
-      player->invoffset++;
+      player->invoffset = GS_OFFSET_WORKBENCH;
+    if(player->window == GS_WINDOW_ENCHANT)
+      player->invoffset = GS_OFFSET_ENCHANT;
     break;
   case 0x65: // Close window
     player->window = GS_WINDOW_INVENTORY;
@@ -245,13 +213,14 @@ int inventory_handler_main(cid_t client_id, char direction, unsigned char msg_id
     click_data->config     = config;
     click_data->window     = proto_getc(data, 0);
     click_data->slot       = proto_gets(data, 1);
-    click_data->right      = proto_getc(data, 2);
-    click_data->item_id    = proto_gets(data, 5);
+    click_data->flags      = INV_FLAG_NONE;
 
-    if(click_data->item_id != -1) {
-      click_data->item_count = proto_getc(data, 6);
-      click_data->item_uses  = proto_gets(data, 7);
-    }
+    if(proto_getc(data, 2))
+      click_data->flags |= INV_FLAG_RIGHT;
+    if(proto_getc(data, 4))
+      click_data->flags |= INV_FLAG_SHIFT;
+
+    proto_getslot(proto_list(data, 5), 0, &click_data->slotdata);
 
     gs_transaction_init(&click_transact, proto_gets(data, 3),
 			inventory_transact_windowclick,
@@ -262,18 +231,19 @@ int inventory_handler_main(cid_t client_id, char direction, unsigned char msg_id
   case 0x67: // Set slot
     if(direction == MSG_TOSERVER)
       break;
-    if(proto_getc(data, 0) != 0)
+    if(proto_getc(data, 0) != GS_WINDOW_INVENTORY)
       break;
+    
     slot_id = proto_gets(data, 1);
-    item_id = proto_gets(data, 2);
+    proto_getslot(proto_list(data, 2), 0, &slotdata);
 
     slot_id = inventory_get_invslot(slot_id, player->invoffset, player->window);
-    if(item_id == -1) {
+    if(slotdata.id == -1) {
       gs_item_init(&player->slots[slot_id], -1, 0, 0);
     }
     else {
       gs_item_init(&player->slots[slot_id],
-		   item_id, proto_getc(data, 3), proto_gets(data, 4));
+		   slotdata.id, slotdata.count, slotdata.meta);
     }
     break;
   }
@@ -285,34 +255,30 @@ int inventory_handler_windowitems(cid_t client_id, char direction, unsigned char
 				  void* extra)
 {
   short i, slot_id;
-  unsigned char* dataptr;
+  objlist_t* list;
+  
   player_t* player = gs_get_player();
 
   if(!player || direction == MSG_TOSERVER)
     return PROXY_OK;
-
   if(proto_getc(data, 0) != GS_WINDOW_INVENTORY)
     return PROXY_OK;
 
-  dataptr = (unsigned char*)data->dataptr;
+  list = proto_list(data, 2);
   for(i=0; i<proto_gets(data, 1); i++) {
-    unsigned char count;
-    short uses;
-    short item_id = ntohs(*(short*)dataptr);
-    dataptr += 2;
-
+    slot_t slotdata;
+    proto_getslot(&list[i], 0, &slotdata);
+    
     slot_id = inventory_get_invslot(i, GS_SLOT_OFFSET, GS_WINDOW_INVENTORY);
-    if(item_id == -1) {
+    if(slotdata.id == -1) {
       if(slot_id > 0)
 	gs_item_init(&player->slots[slot_id-1], -1, 0, 0);
       continue;
     }
-    count = *dataptr++;
-    uses  = ntohs(*(short*)dataptr);
-    dataptr += 2;
 
     if(slot_id > 0) {
-      gs_item_init(&player->slots[slot_id-1], item_id, count, uses);
+      gs_item_init(&player->slots[slot_id-1],
+                   slotdata.id, slotdata.count, slotdata.meta);
     }
   }
   return PROXY_OK;

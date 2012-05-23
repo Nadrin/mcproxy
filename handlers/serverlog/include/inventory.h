@@ -9,6 +9,10 @@
 #ifndef __MCPROXY_HANDLERS_INVENTORY_H
 #define __MCPROXY_HANDLERS_INVENTORY_H
 
+#define INV_FLAG_NONE  0x00
+#define INV_FLAG_RIGHT 0x01
+#define INV_FLAG_SHIFT 0x02
+
 struct inventory_handler_config_s {
   GData* watchlist;
 };
@@ -17,10 +21,8 @@ typedef struct inventory_handler_config_s inventory_handler_config_t;
 struct inventory_clickdata_s {
   unsigned char window;
   short slot;
-  char right;
-  short item_id;
-  unsigned char item_count;
-  unsigned short item_uses;
+  short flags;
+  slot_t slotdata;
   inventory_handler_config_t* config;
 };
 typedef struct inventory_clickdata_s inventory_clickdata_t;

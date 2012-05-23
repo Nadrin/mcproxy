@@ -42,7 +42,7 @@ int track_handler_main(cid_t client_id, char direction, unsigned char msg_id,
   switch(msg_id) {
   case 0x09:
     if(direction == MSG_TOCLIENT) {
-      player->dim = abs(proto_getc(data, 0));
+      player->dim = proto_geti(data, 0) + GS_DIM_OFFSET;
       log_print(NULL, "(%04d) Player %s spawned in: %s", client_id,
 		player->username, gs_get_dimstr(player->dim));
     }

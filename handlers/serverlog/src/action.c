@@ -50,7 +50,8 @@ int action_handler_itemuse(cid_t client_id, char direction, unsigned char msg_id
   action_handler_config_t* config = (action_handler_config_t*)extra;
 
   player_t* player = gs_get_player();
-  short item_id;
+  
+  slot_t slotdata;
   const char* item_name;
   const char* action_name;
   int action_coords[3];
@@ -61,9 +62,9 @@ int action_handler_itemuse(cid_t client_id, char direction, unsigned char msg_id
   case 0x07: // Item use
     break;
   case 0x0F: // Block placement
-    item_id = proto_gets(data, 4);
-    if(item_id != -1) {
-      item_name = action_get_watch(config, item_id);
+    proto_getslot(proto_list(data, 4), 0, &slotdata);
+    if(slotdata.id != -1) {
+      item_name = action_get_watch(config, slotdata.id);
       if(!item_name) break;
 
       action_coords[0] = proto_geti(data, 0);
@@ -72,11 +73,11 @@ int action_handler_itemuse(cid_t client_id, char direction, unsigned char msg_id
       if(action_coords[0] == -1 && action_coords[1] == -1 && action_coords[2] == -1)
 	break;
 
-      if(item_id < 256) action_name = "placed";
+      if(slotdata.id < 256) action_name = "placed";
       else action_name = "used";
 
       log_print(NULL, "(%04d) Player %s %s %s (%d) at %s:[%d,%d,%d]",
-		client_id, player->username, action_name, item_name, item_id,
+		client_id, player->username, action_name, item_name, slotdata.id,
 		gs_get_dimstr(player->dim),
 		action_coords[0], action_coords[1], action_coords[2]);
     }

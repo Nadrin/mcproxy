@@ -377,6 +377,11 @@ int proto_recv_object(nethost_t* host, object_t* curobj, const char format)
   return 0;
 }
 
+inline objlist_t* proto_list(objlist_t* list, size_t index)
+{
+  return (objlist_t*)list->objects[index].data;
+}
+
 objlist_t* proto_recv(nethost_t* host, const char* format)
 {
   size_t i;

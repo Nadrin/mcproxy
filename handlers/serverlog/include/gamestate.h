@@ -16,8 +16,11 @@
 #define GS_PLAYER_OP     0x02
 #define GS_PLAYER_HIDDEN 0x04
 
-#define GS_DIM_NORMAL    0x01
-#define GS_DIM_NETHER    0x02
+#define GS_DIM_OFFSET    2
+
+#define GS_DIM_NETHER    0x01
+#define GS_DIM_OVERWORLD 0x02
+#define GS_DIM_END       0x03
 
 #define GS_SLOT_OFFSET   9
 #define GS_SLOT_MAX      40
@@ -27,6 +30,10 @@
 #define GS_WINDOW_WORKBENCH 2
 #define GS_WINDOW_FURNANCE  3
 #define GS_WINDOW_DISPENSER 4
+#define GS_WINDOW_ENCHANT   5
+
+#define GS_OFFSET_WORKBENCH 10
+#define GS_OFFSET_ENCHANT   1
 
 // Item
 struct item_s {

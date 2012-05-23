@@ -74,6 +74,7 @@ void    proto_putslot(objlist_t* list, size_t index, const slot_t* value);
 int proto_send(nethost_t* host, const objlist_t* list, unsigned long flags);
 objlist_t* proto_recv(nethost_t* host, const char* format);
 objlist_t* proto_new(const char* format, ...);
+objlist_t* proto_list(objlist_t* list, size_t index);
 
 int proto_send_object(nethost_t* host, const object_t* curobj);
 int proto_send_meta(nethost_t* host, const object_t* curobj);

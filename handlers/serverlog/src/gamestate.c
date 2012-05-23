@@ -41,7 +41,7 @@ inline player_t* gs_get_player(void)
 
 char* gs_get_dimstr(const int id)
 {
-  static char* names[] = { "world", "nether" };
+  static char* names[] = { "invalid", "nether", "overworld", "the_end" };
   return names[id];
 }
 
