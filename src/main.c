@@ -111,26 +111,30 @@ static void mcp_parse_arguments(int argc, char **argv, sys_config_t* config)
 
 static void mcp_daemonize(void)
 {
-  pid_t pid, parent;
-  
-  signal(SIGCHLD, sig_daemonize);
-  signal(SIGUSR1, sig_daemonize);
-  signal(SIGALRM, sig_daemonize);
+  struct sigaction sa_daemonize;
+  struct sigaction sa_default[3];
+  pid_t child_pid;
 
-  pid = fork();
-  if(pid < 0) 
+  memset(&sa_daemonize, 0, sizeof(struct sigaction));
+  sa_daemonize.sa_handler = sig_daemonize;
+	
+  sigaction(SIGCHLD, &sa_daemonize, sa_default+0);
+  sigaction(SIGUSR1, &sa_daemonize, sa_default+1);
+  sigaction(SIGALRM, &sa_daemonize, sa_default+2);
+
+  child_pid = fork();
+  if(child_pid < 0) 
     exit(EXIT_FAILURE);
-  if(pid > 0) {
+  if(child_pid > 0) {
     alarm(2);
     pause();
     exit(EXIT_FAILURE);
   }
 
-  parent = getppid();
-  signal(SIGCHLD, SIG_DFL);
-  signal(SIGUSR1, SIG_DFL);
-  signal(SIGALRM, SIG_DFL);
-
+  sigaction(SIGCHLD, sa_default+0, NULL);
+  sigaction(SIGUSR1, sa_default+1, NULL);
+  sigaction(SIGALRM, sa_default+2, NULL);
+	
   umask(0);
   if(setsid() < 0)
     exit(EXIT_FAILURE);
@@ -139,7 +143,7 @@ static void mcp_daemonize(void)
   stdout = freopen("/dev/null", "w", stdout);
   stderr = freopen("/dev/null", "w", stderr);
   
-  kill(parent, SIGUSR1);
+  kill(getppid(), SIGUSR1);
 }
 
 int main(int argc, char **argv)
@@ -148,6 +152,7 @@ int main(int argc, char **argv)
   void*  libhandle;
   int    retcode;
 
+  struct sigaction sa_quit;
   handler_api_t handler_api;
   sys_config_t* system_config;
   
@@ -183,8 +188,10 @@ int main(int argc, char **argv)
   if(system_config->debug == LOG_NOFLAGS)
     mcp_daemonize();
 
-  signal(SIGTERM, sig_quit);
-  signal(SIGINT, sig_quit);
+  memset(&sa_quit, 0, sizeof(struct sigaction));
+  sa_quit.sa_handler = sig_quit;
+  sigaction(SIGTERM, &sa_quit, NULL);
+  sigaction(SIGINT, &sa_quit, NULL);
 
   if(system_config->debug == LOG_NOFLAGS)
     util_file_writepid(system_config->pidfile);

@@ -35,9 +35,6 @@ struct thread_barrier_s
   sem_t* semaphore[2];
   unsigned short count;
   unsigned short nthreads;
-#ifdef MCPROXY_USE_NAMED_SEMAPHORES
-  char name[2][100];
-#endif
 };
 typedef struct thread_barrier_s thread_barrier_t;
 
